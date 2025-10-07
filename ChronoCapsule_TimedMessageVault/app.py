@@ -46,39 +46,53 @@ if menu == "Create Capsule":
         users = []
 
     if not users:
-        st.warning("⚠️ No users found! Please create a user first.")
+        st.warning("⚠️ No users found! You can still enter an email manually.")
+        selected_user = None
+        recipient_email = st.text_input("Enter Recipient Email")
     else:
-        user_map = {u['name']: u['id'] for u in users}
-        creator = st.selectbox("Select User", list(user_map.keys()))
-        title = st.text_input("Capsule Title")
-        message = st.text_area("Capsule Message")
+        user_map = {u['name']: u for u in users}
+        selected_name = st.selectbox("Select User (optional)", ["-- None --"] + list(user_map.keys()))
+        recipient_email = st.text_input("Or enter a custom email")
 
-        # ✅ Only set the default once, using session_state
-        if "scheduled_date" not in st.session_state:
-            st.session_state["scheduled_date"] = datetime.now().date()
-        if "scheduled_time" not in st.session_state:
-            st.session_state["scheduled_time"] = datetime.now().time()
+        if selected_name != "-- None --" and not recipient_email:
+        # Use email from selected user
+            recipient_email = user_map[selected_name]['email']
 
-        selected_date = st.date_input("Select Date", value=st.session_state["scheduled_date"])
-        selected_time = st.time_input("Select Time", value=st.session_state["scheduled_time"])
+# Other inputs
+    title = st.text_input("Capsule Title")
+    message = st.text_area("Capsule Message")
 
-        scheduled_time = datetime.combine(selected_date, selected_time)
+# Scheduled time inputs (with session_state as before)
+    if "scheduled_date" not in st.session_state:
+        st.session_state["scheduled_date"] = datetime.now().date()
+    if "scheduled_time" not in st.session_state:
+        st.session_state["scheduled_time"] = datetime.now().time()
 
-        st.write("Scheduled for:", scheduled_time)
+    selected_date = st.date_input("Select Date", value=st.session_state["scheduled_date"])
+    selected_time = st.time_input("Select Time", value=st.session_state["scheduled_time"])
+    scheduled_time = datetime.combine(selected_date, selected_time)
 
+    st.write("Scheduled for:", scheduled_time)
 
-        if st.button("Create Capsule ✅"):
+# Validation
+    if st.button("Create Capsule ✅"):
+        if not recipient_email:
+            st.error("Please provide a recipient email.")
+        elif not title or not message:
+            st.error("Please fill in all required fields.")
+        else:
             try:
                 supabase.table("capsules").insert({
                     "title": title,
                     "message": message,
-                    "creator_id": user_map[creator],
+                    "recipient_email": recipient_email,
                     "scheduled_time": scheduled_time.isoformat(),
                     "is_delivered": False
                 }).execute()
-                st.success("🎉 Capsule created successfully!")
+                st.success("🎉 Capsule created and scheduled!")
             except Exception as e:
                 st.error(f"Error creating capsule: {e}")
+
 
 # -------------------
 # VIEW CAPSULES
@@ -147,6 +161,7 @@ elif menu == "Manage Users":
         st.table(df_users)
     else:
         st.info("No users found.")
+
 
 
 
