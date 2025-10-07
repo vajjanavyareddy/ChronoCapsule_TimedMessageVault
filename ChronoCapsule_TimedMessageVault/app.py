@@ -53,9 +53,9 @@ if menu == "Create Capsule":
         title = st.text_input("Capsule Title")
         message = st.text_area("Capsule Message")
         # # scheduled_time = st.datetime_input("Schedule Time", value=datetime.now())
-        # selected_date = st.date_input("Select Date", value=datetime.now().date())
-        # selected_time = st.time_input("Select Time", value=datetime.now().time())
-        # scheduled_time = datetime.combine(selected_date, selected_time)
+        selected_date = st.date_input("Select Date", value=datetime.now().date())
+        selected_time = st.time_input("Select Time", value=datetime.now().time())
+        scheduled_time = datetime.combine(selected_date, selected_time)
         if "scheduled_time" not in st.session_state:
             st.session_state["scheduled_time"] = datetime.now()
 
@@ -149,6 +149,7 @@ elif menu == "Manage Users":
         st.table(df_users)
     else:
         st.info("No users found.")
+
 
 
 
