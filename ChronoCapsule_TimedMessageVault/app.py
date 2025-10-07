@@ -60,11 +60,11 @@ if menu == "Create Capsule":
             st.session_state["scheduled_time"] = datetime.now()
 
     # Use datetime_input
-        scheduled_time = st.datetime_input(
-            "Schedule Time", 
-            value=st.session_state["scheduled_time"], 
-            key="scheduled_time_input"
-        )
+        # scheduled_time = st.datetime_input(
+        #     "Schedule Time", 
+        #     value=st.session_state["scheduled_time"], 
+        #     key="scheduled_time_input"
+        # )
 
         st.write("Scheduled for:", scheduled_time)
 
@@ -149,6 +149,7 @@ elif menu == "Manage Users":
         st.table(df_users)
     else:
         st.info("No users found.")
+
 
 
 
