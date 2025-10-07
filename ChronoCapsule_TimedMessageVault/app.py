@@ -52,7 +52,11 @@ if menu == "Create Capsule":
         creator = st.selectbox("Select User", list(user_map.keys()))
         title = st.text_input("Capsule Title")
         message = st.text_area("Capsule Message")
-        scheduled_time = st.datetime_input("Schedule Time", value=datetime.now())
+        # scheduled_time = st.datetime_input("Schedule Time", value=datetime.now())
+        selected_date = st.date_input("Select Date", value=datetime.now().date())
+        selected_time = st.time_input("Select Time", value=datetime.now().time())
+        scheduled_time = datetime.combine(selected_date, selected_time)
+
 
         if st.button("Create Capsule ✅"):
             try:
@@ -134,3 +138,4 @@ elif menu == "Manage Users":
         st.table(df_users)
     else:
         st.info("No users found.")
+
