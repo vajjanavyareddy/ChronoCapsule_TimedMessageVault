@@ -66,7 +66,7 @@ if menu == "Create Capsule":
             key="scheduled_time_input"
         )
 
-    st.write("Scheduled for:", scheduled_time)
+        st.write("Scheduled for:", scheduled_time)
 
 
         if st.button("Create Capsule ✅"):
@@ -149,5 +149,6 @@ elif menu == "Manage Users":
         st.table(df_users)
     else:
         st.info("No users found.")
+
 
 
