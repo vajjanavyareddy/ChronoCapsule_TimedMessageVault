@@ -166,6 +166,7 @@ elif menu == "View Capsules":
                     <p>{row['message']}</p>
                     <p><b>Recipient:</b> {row['recipient_email']}<br>
                     <b>Scheduled (UTC):</b> {row['scheduled_time']}<br>
+                    <b>STD:</b> {row['std']}<br>
                     <b>Status:</b> {"✅ Delivered" if row['is_delivered'] else "⌛ Pending"}</p>
                     </div>
                     """, unsafe_allow_html=True)
@@ -200,3 +201,4 @@ elif menu == "Manage Users":
         st.table(df_users)
     else:
         st.info("No users found.")
+
