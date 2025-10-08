@@ -165,6 +165,7 @@ elif menu == "View Capsules":
                     <h4>🎯 {row['title']}</h4>
                     <p>{row['message']}</p>
                     <p><b>Recipient:</b> {row['recipient_email']}<br>
+                    df['std'] = df['scheduled_time'] - timedelta(hours=5, minutes=30)
                     <b>Scheduled (UTC):</b> {row['scheduled_time']}<br>
                     <b>STD:</b> {row['std']}<br>
                     <b>Status:</b> {"✅ Delivered" if row['is_delivered'] else "⌛ Pending"}</p>
@@ -201,4 +202,5 @@ elif menu == "Manage Users":
         st.table(df_users)
     else:
         st.info("No users found.")
+
 
