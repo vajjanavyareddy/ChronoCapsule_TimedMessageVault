@@ -2,7 +2,7 @@
 import streamlit as st  # type: ignore
 import pandas as pd  # type: ignore
 from supabase import create_client
-from datetime import datetime
+from datetime import datetime, timedelta
 import smtplib
 from email.mime.text import MIMEText
 import warnings
@@ -68,7 +68,6 @@ if menu == "Create Capsule":
 
     if not users:
         st.warning("⚠️ No users found! You can still enter an email manually.")
-        selected_user = None
         recipient_email = st.text_input("Enter Recipient Email")
     else:
         user_map = {u['name']: u for u in users}
@@ -90,9 +89,16 @@ if menu == "Create Capsule":
 
     selected_date = st.date_input("Select Date", value=st.session_state["scheduled_date"])
     selected_time = st.time_input("Select Time", value=st.session_state["scheduled_time"])
-    scheduled_time = datetime.combine(selected_date, selected_time)
 
-    st.write("Scheduled for:", scheduled_time)
+    # Combine into IST datetime
+    local_dt = datetime.combine(selected_date, selected_time)
+
+    # Convert IST → UTC (IST is +5:30)
+    scheduled_time_utc = local_dt - timedelta(hours=5, minutes=30)
+
+    # Save UTC time to database
+    st.write(f"🕒 Scheduled for (IST): {local_dt.strftime('%Y-%m-%d %H:%M')}")
+    st.write(f"🌍 Stored as (UTC): {scheduled_time_utc.strftime('%Y-%m-%d %H:%M')}")
 
     # Save capsule
     if st.button("Create Capsule ✅"):
@@ -106,16 +112,19 @@ if menu == "Create Capsule":
                     "title": title,
                     "message": message,
                     "recipient_email": recipient_email,
-                    "scheduled_time": scheduled_time.isoformat(),
+                    "scheduled_time": scheduled_time_utc.isoformat(),  # stored in UTC
                     "is_delivered": False
                 }).execute()
                 st.success("🎉 Capsule created and scheduled!")
 
-                # Optional: Send immediate confirmation email
+                # Optional: Send confirmation email immediately
                 send_now = st.checkbox("Send confirmation email now?")
                 if send_now:
-                    sent = send_email(recipient_email, f"Capsule Scheduled: {title}",
-                                      f"<p>Your capsule titled <b>{title}</b> has been scheduled for delivery at {scheduled_time}.</p>")
+                    sent = send_email(
+                        recipient_email,
+                        f"Capsule Scheduled: {title}",
+                        f"<p>Your capsule titled <b>{title}</b> has been scheduled for delivery at {local_dt.strftime('%Y-%m-%d %H:%M %p IST')}.</p>"
+                    )
                     if sent:
                         st.info("📨 Confirmation email sent successfully!")
 
@@ -156,7 +165,7 @@ elif menu == "View Capsules":
                     <h4>🎯 {row['title']}</h4>
                     <p>{row['message']}</p>
                     <p><b>Recipient:</b> {row['recipient_email']}<br>
-                    <b>Scheduled:</b> {row['scheduled_time']}<br>
+                    <b>Scheduled (UTC):</b> {row['scheduled_time']}<br>
                     <b>Status:</b> {"✅ Delivered" if row['is_delivered'] else "⌛ Pending"}</p>
                     </div>
                     """, unsafe_allow_html=True)
