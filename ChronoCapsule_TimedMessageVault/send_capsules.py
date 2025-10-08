@@ -39,24 +39,25 @@ def send_email(to_email, subject, body):
 
 # --- Capsule delivery logic ---
 def main():
-    now = datetime.now(timezone.utc).isoformat()
-    print(f"🕒 Checking for capsules to send at {now}")
+    now_utc = datetime.now(timezone.utc)
+    now_ist = now_utc + timedelta(hours=5, minutes=30)
 
-    # Fetch capsules scheduled before now and not delivered
-    response = supabase.table("capsules") \
-        .select("*") \
-        .eq("is_delivered", False) \
-        .lte("scheduled_time", now) \
-        .execute()
+    print(f"Checking for capsules to send at (IST): {now_ist}")
 
-    if not response.data:
-        print("ℹ️ No capsules to send.")
+    # Convert IST back to UTC for comparison with stored UTC time
+    now_iso = now_ist.astimezone(timezone.utc).isoformat()
+
+    response = supabase.table("capsules").select("*").filter("is_delivered", "eq", False).filter("scheduled_time", "lte", now_iso).execute()
+    capsules = response.data
+
+    if not capsules:
+        print("No capsules to send.")
         return
 
-    for capsule in response.data:
+    for capsule in capsules:
         recipient = capsule.get("recipient_email")
         if not recipient:
-            print(f"⚠️ Skipping capsule {capsule['id']}: No recipient email.")
+            print(f"Skipping capsule {capsule['id']}: No recipient email.")
             continue
 
         title = capsule.get("title", "No Subject")
@@ -70,3 +71,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
