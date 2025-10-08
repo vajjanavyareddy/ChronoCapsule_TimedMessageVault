@@ -1,4 +1,3 @@
-# app.py
 import streamlit as st  # type: ignore
 import pandas as pd  # type: ignore
 from supabase import create_client
@@ -149,6 +148,10 @@ elif menu == "View Capsules":
     if data:
         df = pd.DataFrame(data)
 
+        # --- NEW: create STD before iterating ---
+        df['scheduled_time'] = pd.to_datetime(df['scheduled_time'], utc=True, errors='coerce')
+        df['std'] = df['scheduled_time'] - timedelta(hours=5, minutes=30)  # UTC−05:30
+
         if filter_status == "Pending":
             df = df[df["is_delivered"] == False]
         elif filter_status == "Delivered":
@@ -165,9 +168,8 @@ elif menu == "View Capsules":
                     <h4>🎯 {row['title']}</h4>
                     <p>{row['message']}</p>
                     <p><b>Recipient:</b> {row['recipient_email']}<br>
-                    df['std'] = df['scheduled_time'] - timedelta(hours=5, minutes=30)
                     <b>Scheduled (UTC):</b> {row['scheduled_time']}<br>
-                    <b>STD:</b> {row['std']}<br>
+                    <b>STD (UTC−05:30):</b> {row['std']}<br>
                     <b>Status:</b> {"✅ Delivered" if row['is_delivered'] else "⌛ Pending"}</p>
                     </div>
                     """, unsafe_allow_html=True)
@@ -202,5 +204,3 @@ elif menu == "Manage Users":
         st.table(df_users)
     else:
         st.info("No users found.")
-
-
