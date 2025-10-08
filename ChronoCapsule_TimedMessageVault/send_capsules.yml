@@ -2,8 +2,8 @@ name: Send Scheduled Capsules
 
 on:
   schedule:
-    - cron: '*/1 * * * *'  # every 5 minutes
-  workflow_dispatch:  # lets you run it manually
+    - cron: '*/1 * * * *'   # runs every 1 minute (GitHub Actions runs in UTC)
+  workflow_dispatch:          # allows manual run from Actions tab
 
 jobs:
   send-capsules:
@@ -11,19 +11,20 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install supabase
           pip install email-validator
 
-      - name: Run script
+      - name: Run scheduled capsule sender
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
