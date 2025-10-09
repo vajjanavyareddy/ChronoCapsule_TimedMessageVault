@@ -8,31 +8,23 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-# -------------------
-# PAGE CONFIG
-# -------------------
+# ------------------- PAGE CONFIG -------------------
 st.set_page_config(page_title="ChronoCapsule", page_icon="⏳", layout="wide")
 
-# -------------------
-# SUPABASE CLIENT
-# -------------------
+# ------------------- SUPABASE -------------------
 supabase_url = st.secrets["supabase"]["url"]
 supabase_key = st.secrets["supabase"]["key"]
 supabase = create_client(supabase_url, supabase_key)
 
-# -------------------
-# EMAIL FUNCTION
-# -------------------
+# ------------------- EMAIL FUNCTION -------------------
 def send_email(recipient, subject, message):
     try:
         sender_email = st.secrets["email"]["address"]
         sender_password = st.secrets["email"]["password"]
-
         msg = MIMEText(message, "html")
         msg["Subject"] = subject
         msg["From"] = sender_email
         msg["To"] = recipient
-
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(sender_email, sender_password)
             server.send_message(msg)
@@ -41,55 +33,34 @@ def send_email(recipient, subject, message):
         st.error(f"❌ Failed to send email: {e}")
         return False
 
-# -------------------
-# GLOBAL CSS
-# -------------------
+# ------------------- GLOBAL CSS -------------------
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
-body {font-family: 'Poppins', sans-serif; background-color:#f5f7fa;}
+body {font-family:'Poppins', sans-serif; background:#f5f7fa;}
 
-/* Sidebar card style */
-.sidebar-card {
-    background:#fff;
-    border-radius:12px;
-    padding:15px;
-    margin:10px 0;
-    box-shadow:0 3px 12px rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
-    text-align:center;
-    cursor:pointer;
-    font-weight:600;
-    color:#283E51;
-}
-.sidebar-card:hover {
-    transform: translateY(-2px);
-    box-shadow:0 6px 16px rgba(0,0,0,0.15);
-    background: linear-gradient(90deg, #6a11cb, #2575fc);
-    color:white;
-}
-
-/* Header */
 .main-header {
-    text-align:center;
-    font-size:2rem;
-    font-weight:700;
-    color:white;
-    padding:1rem;
-    border-radius:14px;
+    text-align:center; font-size:2rem; font-weight:700; color:white;
+    padding:1rem; border-radius:12px;
     background: linear-gradient(90deg, #6a11cb, #2575fc);
-    margin-bottom:2rem;
-    box-shadow:0 4px 12px rgba(0,0,0,0.25);
+    margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);
 }
 
-/* Section */
-.section-header {font-size:1.5rem; font-weight:600; color:#283E51; margin-bottom:0.5rem;}
-.divider {height:3px; width:80px; background: linear-gradient(90deg, #4B79A1, #283E51); border-radius:2px; margin-bottom:1.5rem;}
+.sidebar-card {
+    padding: 18px; margin: 10px 0; border-radius:14px;
+    background: linear-gradient(145deg, #ffffff, #f0f0f0);
+    box-shadow:0 4px 12px rgba(0,0,0,0.1); text-align:center;
+    font-weight:600; cursor:pointer; transition:0.3s;
+}
+.sidebar-card:hover {transform:translateY(-4px); box-shadow:0 8px 20px rgba(0,0,0,0.15);}
+.sidebar-card.active {background: linear-gradient(90deg, #6a11cb, #2575fc); color:white;}
 
-/* Capsule cards */
+.section-header {font-size:1.5rem; font-weight:600; color:#283E51; margin-bottom:0.5rem;}
+.divider {height:3px; width:80px; background: linear-gradient(90deg,#4B79A1,#283E51); border-radius:2px; margin-bottom:1.5rem;}
+
 .capsule-card, .user-card {
-    background:#fff; border-radius:14px; padding:1.5rem; margin-bottom:1rem; 
-    box-shadow:0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;
+    background:#fff; border-radius:14px; padding:1.5rem; margin-bottom:1rem; box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
 }
 .capsule-card:hover, .user-card:hover {transform:translateY(-4px); box-shadow:0 8px 18px rgba(0,0,0,0.15);}
 .capsule-title, .user-name {font-weight:600; font-size:1.2rem; color:#2C3E50;}
@@ -97,34 +68,28 @@ body {font-family: 'Poppins', sans-serif; background-color:#f5f7fa;}
 .status-pending {color:#E67E22; font-weight:600;}
 .status-delivered {color:#27AE60; font-weight:600;}
 
-/* Buttons */
-.stButton>button {background: linear-gradient(90deg, #4B79A1, #283E51); color:white; font-weight:600; border-radius:12px; padding:10px 24px; border:none; transition: all 0.3s ease;}
-.stButton>button:hover {background: linear-gradient(90deg, #283E51, #4B79A1); transform:translateY(-2px);}
+.stButton>button {background: linear-gradient(90deg,#4B79A1,#283E51); color:white; font-weight:600; border-radius:12px; padding:10px 24px; border:none; transition: all 0.3s ease;}
+.stButton>button:hover {background: linear-gradient(90deg,#283E51,#4B79A1); transform:translateY(-2px);}
 .stTextInput>div>div>input, textarea, select {border-radius:10px !important; border:1px solid #dce1e7 !important; box-shadow:0px 2px 6px rgba(0,0,0,0.05);}
 </style>
 """, unsafe_allow_html=True)
 
-# -------------------
-# HEADER
-# -------------------
+# ------------------- HEADER -------------------
 st.markdown('<div class="main-header">⏳ ChronoCapsule — Timed Messages</div>', unsafe_allow_html=True)
 
-# -------------------
-# SIDEBAR MENU AS CARDS
-# -------------------
-st.sidebar.markdown('<div class="section-header">📋 Menu</div><div class="divider"></div>', unsafe_allow_html=True)
-menu_options = ["Create Capsule", "View Capsules", "Manage Users"]
-selected = st.sidebar.radio("", menu_options, index=0, key="menu_radio")
-for opt in menu_options:
-    if st.sidebar.button(opt, key=f"card_{opt}"):
-        selected = opt
-        st.session_state["menu_radio"] = menu_options.index(opt)
+# ------------------- SIDEBAR MENU AS CARDS -------------------
+with st.sidebar:
+    st.markdown("<div style='margin-top:1rem;'></div>", unsafe_allow_html=True)
+    menu_options = ["Create Capsule","View Capsules","Manage Users"]
+    if "active_menu" not in st.session_state:
+        st.session_state.active_menu = "Create Capsule"
+    for option in menu_options:
+        if st.button(option, key=option):
+            st.session_state.active_menu = option
+        st.markdown(f"<div class='sidebar-card {'active' if st.session_state.active_menu==option else ''}'>{option}</div>", unsafe_allow_html=True)
+menu = st.session_state.active_menu
 
-menu = selected
-
-# -------------------
-# CREATE CAPSULE
-# -------------------
+# ------------------- CREATE CAPSULE -------------------
 if menu == "Create Capsule":
     st.markdown('<div class="section-header">📝 Create Capsule</div><div class="divider"></div>', unsafe_allow_html=True)
 
@@ -168,9 +133,7 @@ if menu == "Create Capsule":
             except Exception as e:
                 st.error(f"Error: {e}")
 
-# -------------------
-# VIEW CAPSULES
-# -------------------
+# ------------------- VIEW CAPSULES -------------------
 elif menu == "View Capsules":
     st.markdown('<div class="section-header">📦 View Capsules</div><div class="divider"></div>', unsafe_allow_html=True)
 
@@ -184,19 +147,18 @@ elif menu == "View Capsules":
     if data:
         df = pd.DataFrame(data)
         df["scheduled_time"] = pd.to_datetime(df["scheduled_time"], utc=True, errors="coerce")
-        df["scheduled_ist"] = df["scheduled_time"] + timedelta(hours=5, minutes=30)
+        df["scheduled_ist"] = df["scheduled_time"].apply(lambda x: x + timedelta(hours=5, minutes=30) if pd.notnull(x) else None)
 
-        if filter_status == "Pending":
+        if filter_status=="Pending":
             df = df[df["is_delivered"]==False]
-        elif filter_status == "Delivered":
+        elif filter_status=="Delivered":
             df = df[df["is_delivered"]==True]
 
         if df.empty:
             st.info("No capsules match filter.")
         else:
             for _, row in df.iterrows():
-                ist_time = row['scheduled_ist']
-                ist_str = ist_time.strftime('%Y-%m-%d %H:%M') if pd.notnull(ist_time) else "N/A"
+                ist_str = row['scheduled_ist'].strftime('%Y-%m-%d %H:%M') if row['scheduled_ist'] else "N/A"
                 st.markdown(f"""
                     <div class="capsule-card">
                         <div class="capsule-title">🎯 {row['title']}</div>
@@ -211,9 +173,7 @@ elif menu == "View Capsules":
     else:
         st.info("No capsules found.")
 
-# -------------------
-# MANAGE USERS
-# -------------------
+# ------------------- MANAGE USERS -------------------
 elif menu == "Manage Users":
     st.markdown('<div class="section-header">👥 Manage Users</div><div class="divider"></div>', unsafe_allow_html=True)
 
