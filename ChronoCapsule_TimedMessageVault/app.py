@@ -8,7 +8,7 @@ warnings.filterwarnings("ignore")
 
 st.set_page_config(page_title="ChronoCapsule", page_icon="⏳", layout="wide")
 
-# Supabase
+# Supabase client
 supabase_url = st.secrets["supabase"]["url"]
 supabase_key = st.secrets["supabase"]["key"]
 supabase = create_client(supabase_url, supabase_key)
@@ -17,51 +17,49 @@ supabase = create_client(supabase_url, supabase_key)
 if "active_menu" not in st.session_state:
     st.session_state.active_menu = "Create Capsule"
 
-# Global CSS
+# CSS
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 body {font-family:'Poppins',sans-serif; background:#f4f6f8;}
-.main-header {text-align:center; font-size:2rem; font-weight:700; color:white;
-padding:1rem; border-radius:14px; background: linear-gradient(90deg,#6a11cb,#2575fc);
-margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);}
-.section-header {font-size:1.5rem; font-weight:600; color:#283E51; margin-bottom:0.5rem;}
-.divider {height:3px; width:80px; background: linear-gradient(90deg,#4B79A1,#283E51); border-radius:2px; margin-bottom:1.5rem;}
-.capsule-card, .user-card {background:#fff; border-radius:14px; padding:1.5rem; margin-bottom:1rem;
-box-shadow:0 4px 12px rgba(0,0,0,0.1); transition:all 0.3s ease;}
-.capsule-card:hover, .user-card:hover {transform:translateY(-4px); box-shadow:0 8px 18px rgba(0,0,0,0.15);}
-.capsule-title, .user-name {font-weight:600; font-size:1.2rem; color:#2C3E50;}
-.capsule-message, .user-info {color:#555; font-size:0.95rem; margin-top:4px;}
+.main-header {text-align:center; font-size:2.2rem; font-weight:700; color:white; padding:1rem; border-radius:14px;
+background: linear-gradient(90deg,#6a11cb,#2575fc); margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);}
+.section-header {font-size:1.6rem; font-weight:600; color:#283E51; margin-bottom:0.5rem;}
+.divider {height:4px; width:100px; background: linear-gradient(90deg,#4B79A1,#283E51); border-radius:2px; margin-bottom:1.5rem;}
+.capsule-card, .user-card {background:#fff; border-radius:16px; padding:1.8rem; margin-bottom:1rem; box-shadow:0 6px 20px rgba(0,0,0,0.1); transition:all 0.3s ease;}
+.capsule-card:hover, .user-card:hover {transform:translateY(-4px); box-shadow:0 10px 25px rgba(0,0,0,0.15);}
+.capsule-title, .user-name {font-weight:600; font-size:1.3rem; color:#2C3E50;}
+.capsule-message, .user-info {color:#555; font-size:1rem; margin-top:6px;}
 .status-pending {color:#E67E22; font-weight:600;}
 .status-delivered {color:#27AE60; font-weight:600;}
-.menu-card {border-radius:14px; padding:15px; margin-bottom:12px; font-weight:600; font-size:16px;
-text-align:center; color:white; cursor:pointer; transition:all 0.3s ease;}
-.menu-card:hover {transform:translateY(-4px); opacity:0.85;}
+.menu-card {border-radius:16px; padding:20px; margin-bottom:20px; font-weight:600; font-size:18px; text-align:center; color:white; cursor:pointer; transition:all 0.3s ease; width:200px;}
+.menu-card:hover {transform:translateY(-4px); opacity:0.9;}
 </style>
 """, unsafe_allow_html=True)
 
 # Header
 st.markdown('<div class="main-header">⏳ ChronoCapsule — Timed Messages</div>', unsafe_allow_html=True)
 
-# Sidebar menu as colorful cards
+# Sidebar menu cards
 menu_options = [
-    {"name":"Create Capsule", "color":"#3498DB", "icon":"📝"},
-    {"name":"View Capsules", "color":"#2ECC71", "icon":"📦"},
-    {"name":"Manage Users", "color":"#F39C12", "icon":"👥"}
+    {"name": "Create Capsule", "color": "#3498DB", "icon": "📝"},
+    {"name": "View Capsules", "color": "#2ECC71", "icon": "📦"},
+    {"name": "Manage Users", "color": "#F39C12", "icon": "👥"}
 ]
 
 with st.sidebar:
     st.markdown("<h4 style='text-align:center;'>📋 MENU</h4>", unsafe_allow_html=True)
     for option in menu_options:
-        clicked = st.button(f"{option['icon']} {option['name']}", key=option['name'])
-        if clicked:
+        if st.button(f"{option['icon']} {option['name']}", key=option['name']):
             st.session_state.active_menu = option['name']
+        # Only **visual card** (no extra duplicate)
         st.markdown(f"""
         <div class="menu-card" style="background:{option['color']}">
             {option['icon']} {option['name']}
         </div>
         """, unsafe_allow_html=True)
 
+# Active menu
 menu = st.session_state.active_menu
 
 # -------------------
@@ -69,8 +67,10 @@ menu = st.session_state.active_menu
 # -------------------
 if menu == "Create Capsule":
     st.markdown('<div class="section-header">📝 Create Capsule</div><div class="divider"></div>', unsafe_allow_html=True)
-    try: users = supabase.table("users").select("*").execute().data
-    except: users = []
+    try:
+        users = supabase.table("users").select("*").execute().data
+    except:
+        users = []
 
     if not users:
         st.warning("⚠️ No users found! Enter email manually.")
@@ -114,8 +114,10 @@ elif menu == "View Capsules":
     st.markdown('<div class="section-header">📦 View Capsules</div><div class="divider"></div>', unsafe_allow_html=True)
     filter_status = st.radio("Filter By", ["All", "Pending", "Delivered"], horizontal=True)
 
-    try: data = supabase.table("capsules").select("*").execute().data
-    except: data = []
+    try:
+        data = supabase.table("capsules").select("*").execute().data
+    except:
+        data = []
 
     if data:
         df = pd.DataFrame(data)
@@ -123,6 +125,7 @@ elif menu == "View Capsules":
         df["scheduled_ist"] = df["scheduled_time"] + timedelta(hours=5, minutes=30)
         if filter_status=="Pending": df = df[df["is_delivered"]==False]
         elif filter_status=="Delivered": df = df[df["is_delivered"]==True]
+
         if df.empty: st.info("No capsules match filter.")
         else:
             for _, row in df.iterrows():
