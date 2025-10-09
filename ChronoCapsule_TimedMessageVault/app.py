@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 from supabase import create_client
 from datetime import datetime, timedelta
+import smtplib
+from email.mime.text import MIMEText
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -9,7 +11,7 @@ warnings.filterwarnings("ignore")
 # -------------------
 # PAGE CONFIG
 # -------------------
-st.set_page_config(page_title="⏳ ChronoCapsule", layout="wide")
+st.set_page_config(page_title="ChronoCapsule", page_icon="⏳", layout="wide")
 
 # -------------------
 # SUPABASE CLIENT
@@ -19,10 +21,31 @@ supabase_key = st.secrets["supabase"]["key"]
 supabase = create_client(supabase_url, supabase_key)
 
 # -------------------
+# EMAIL FUNCTION
+# -------------------
+def send_email(recipient, subject, message):
+    try:
+        sender_email = st.secrets["email"]["address"]
+        sender_password = st.secrets["email"]["password"]
+
+        msg = MIMEText(message, "html")
+        msg["Subject"] = subject
+        msg["From"] = sender_email
+        msg["To"] = recipient
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+        return True
+    except Exception as e:
+        st.error(f"❌ Failed to send email: {e}")
+        return False
+
+# -------------------
 # SESSION STATE
 # -------------------
-if "page" not in st.session_state:
-    st.session_state.page = "Create Capsule"
+if "menu" not in st.session_state:
+    st.session_state.menu = "Create Capsule"
 
 # -------------------
 # GLOBAL CSS
@@ -31,11 +54,25 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
-.main-header {text-align:center; font-size:2.5rem; font-weight:700; color:white; padding:1.5rem; border-radius:14px; 
-             background: linear-gradient(90deg, #6a11cb, #2575fc); margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);}
-.capsule-card, .user-card {border-radius:16px; padding:1.5rem; margin-bottom:1rem; box-shadow:0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;}
+.main-header {
+    text-align:center; font-size:2.5rem; font-weight:700; color:white;
+    padding:1.5rem; border-radius:14px; background: linear-gradient(90deg,#FFD700,#FF8C00);
+    margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);
+}
+.stRadio>div>label {
+    display:block; background: linear-gradient(135deg, #FFDD00, #FF8C00);
+    color:#000; font-weight:600; padding:12px; margin-bottom:8px; border-radius:10px;
+    cursor:pointer; text-align:center; transition: all 0.3s ease;
+}
+.stRadio>div>label:hover {
+    transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.capsule-card, .user-card {
+    border-radius:16px; padding:1.5rem; margin-bottom:1rem;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;
+}
 .capsule-card:hover, .user-card:hover {transform:translateY(-4px); box-shadow:0 8px 18px rgba(0,0,0,0.15);}
-.capsule-title, .user-name {font-weight:600; font-size:1.25rem; color:#2C3E50;}
+.capsule-title, .user-name {font-weight:600; font-size:1.2rem; color:#2C3E50;}
 .capsule-message, .user-info {color:#555; font-size:0.95rem; margin-top:4px;}
 .status-pending {color:#E67E22; font-weight:600;}
 .status-delivered {color:#27AE60; font-weight:600;}
@@ -48,16 +85,17 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
 st.markdown('<div class="main-header">⏳ ChronoCapsule — Timed Messages</div>', unsafe_allow_html=True)
 
 # -------------------
-# SIDEBAR MENU (Radio Buttons)
+# SIDEBAR MENU (RADIO)
 # -------------------
-menu_options = ["Create Capsule", "View Capsules", "Manage Users"]
-st.session_state.page = st.sidebar.radio("📋 Menu", menu_options, index=menu_options.index(st.session_state.page))
+menu = st.sidebar.radio("📋 Menu", ["Create Capsule", "View Capsules", "Manage Users"])
+st.session_state.menu = menu
 
 # -------------------
 # PAGE: CREATE CAPSULE
 # -------------------
-if st.session_state.page == "Create Capsule":
+if st.session_state.menu == "Create Capsule":
     st.subheader("📝 Create Capsule")
+
     try:
         users = supabase.table("users").select("*").execute().data
     except:
@@ -100,10 +138,9 @@ if st.session_state.page == "Create Capsule":
 # -------------------
 # PAGE: VIEW CAPSULES
 # -------------------
-elif st.session_state.page == "View Capsules":
+elif st.session_state.menu == "View Capsules":
     st.subheader("📦 View Capsules")
     filter_status = st.radio("Filter By", ["All", "Pending", "Delivered"], horizontal=True)
-
     try:
         data = supabase.table("capsules").select("*").execute().data
     except:
@@ -111,12 +148,12 @@ elif st.session_state.page == "View Capsules":
 
     if data:
         df = pd.DataFrame(data)
-        df["scheduled_time"] = pd.to_datetime(df.get("scheduled_time"), utc=True, errors="coerce")
+        df["scheduled_time"] = pd.to_datetime(df["scheduled_time"], utc=True, errors="coerce")
         df["scheduled_ist"] = df["scheduled_time"].apply(lambda x: x + timedelta(hours=5, minutes=30) if pd.notnull(x) else None)
 
-        if filter_status == "Pending":
+        if filter_status=="Pending":
             df = df[df["is_delivered"]==False]
-        elif filter_status == "Delivered":
+        elif filter_status=="Delivered":
             df = df[df["is_delivered"]==True]
 
         if df.empty:
@@ -143,7 +180,7 @@ elif st.session_state.page == "View Capsules":
 # -------------------
 # PAGE: MANAGE USERS
 # -------------------
-elif st.session_state.page == "Manage Users":
+elif st.session_state.menu == "Manage Users":
     st.subheader("👥 Manage Users")
     name = st.text_input("Name")
     email = st.text_input("Email")
