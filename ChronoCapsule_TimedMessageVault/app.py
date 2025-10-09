@@ -69,30 +69,34 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
     font-size:1.2rem; font-weight:600; text-align:center; cursor:pointer;
     color:white; transition: all 0.3s ease;
 }
+.stRadio>div>label:nth-child(1) { background: linear-gradient(135deg, #a7c957, #d3e27f); }  /* Create Capsule */
+.stRadio>div>label:nth-child(2) { background: linear-gradient(135deg, #3399ff, #99ccff); }  /* View Capsules */
+.stRadio>div>label:nth-child(3) { background: linear-gradient(135deg, #ff7f50, #ffb690); }  /* Manage Users */
+.stRadio>div>label:hover { transform: translateY(-3px); box-shadow:0 6px 18px rgba(0,0,0,0.2); }
 
-/* Individual radio button gradients (light) */
-.stRadio>div>label:nth-child(1) { background: linear-gradient(135deg, #a7c957, #d3e27f); }  /* Create Capsule - light green */
-.stRadio>div>label:nth-child(2) { background: linear-gradient(135deg, #3399ff, #99ccff); }  /* View Capsules - light blue */
-.stRadio>div>label:nth-child(3) { background: linear-gradient(135deg, #ff7f50, #ffb690); }  /* Manage Users - light orange */
-
-/* Hover effect for "card" buttons */
-.stRadio>div>label:hover {
-    transform: translateY(-3px); box-shadow:0 6px 18px rgba(0,0,0,0.2);
+/* Horizontal capsule container */
+.capsule-container {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 15px;
 }
 
 /* Capsule/User Cards */
 .capsule-card, .user-card {
-    border-radius:16px; padding:1.5rem; margin-bottom:1rem;
-    box-shadow:0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;
+    flex: 0 0 300px;
+    border-radius:16px; padding:1.5rem;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    display: inline-block;
 }
-.capsule-card:hover, .user-card:hover {transform:translateY(-4px); box-shadow:0 8px 18px rgba(0,0,0,0.15);}
-.capsule-title, .user-name {font-weight:600; font-size:1.2rem; color:#2C3E50;}
-.capsule-message, .user-info {color:#555; font-size:0.95rem; margin-top:4px;}
-.status-pending {color:#E67E22; font-weight:600;}
-.status-delivered {color:#27AE60; font-weight:600;}
+.capsule-card:hover, .user-card:hover { transform:translateY(-4px); box-shadow:0 8px 18px rgba(0,0,0,0.15); }
+.capsule-title, .user-name { font-weight:600; font-size:1.2rem; color:#2C3E50; }
+.capsule-message, .user-info { color:#555; font-size:0.95rem; margin-top:4px; }
+.status-pending { color:#E67E22; font-weight:600; }
+.status-delivered { color:#27AE60; font-weight:600; }
 </style>
 """, unsafe_allow_html=True)
-
 
 # -------------------
 # HEADER
@@ -100,7 +104,7 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
 st.markdown('<div class="main-header">⏳ ChronoCapsule — Timed Messages</div>', unsafe_allow_html=True)
 
 # -------------------
-# SIDEBAR MENU (RADIO)
+# SIDEBAR MENU
 # -------------------
 menu = st.sidebar.radio("📋 Menu", ["Create Capsule", "View Capsules", "Manage Users"])
 st.session_state.menu = menu
@@ -110,7 +114,6 @@ st.session_state.menu = menu
 # -------------------
 if st.session_state.menu == "Create Capsule":
     st.subheader("📝 Create Capsule")
-
     try:
         users = supabase.table("users").select("*").execute().data
     except:
@@ -153,11 +156,9 @@ if st.session_state.menu == "Create Capsule":
 # -------------------
 # PAGE: VIEW CAPSULES
 # -------------------
-# ------------------- VIEW CAPSULES PAGE -------------------
 elif menu == "View Capsules":
     st.subheader("📦 View Capsules")
     filter_status = st.radio("Filter By", ["All", "Pending", "Delivered"], horizontal=True)
-    
     try:
         data = supabase.table("capsules").select("*").execute().data
     except:
@@ -168,17 +169,15 @@ elif menu == "View Capsules":
         df["scheduled_time"] = pd.to_datetime(df["scheduled_time"], utc=True, errors="coerce")
         df["scheduled_ist"] = df["scheduled_time"].apply(lambda x: x + timedelta(hours=5, minutes=30) if pd.notnull(x) else None)
 
-        if filter_status == "Pending":
-            df = df[df["is_delivered"] == False]
-        elif filter_status == "Delivered":
-            df = df[df["is_delivered"] == True]
+        if filter_status=="Pending":
+            df = df[df["is_delivered"]==False]
+        elif filter_status=="Delivered":
+            df = df[df["is_delivered"]==True]
 
         if df.empty:
             st.info("No capsules found.")
         else:
             colors = ["#f6d365","#fda085","#a1c4fd","#c2e9fb","#84fab0","#8fd3f4"]
-            
-            # Responsive horizontal container
             st.markdown('<div class="capsule-container">', unsafe_allow_html=True)
             for i, (_, row) in enumerate(df.iterrows()):
                 scheduled_str = row["scheduled_ist"].strftime('%Y-%m-%d %H:%M') if pd.notnull(row["scheduled_ist"]) else "N/A"
@@ -197,7 +196,6 @@ elif menu == "View Capsules":
             st.markdown('</div>', unsafe_allow_html=True)
     else:
         st.info("No capsules found.")
-
 
 # -------------------
 # PAGE: MANAGE USERS
@@ -223,6 +221,7 @@ elif st.session_state.menu == "Manage Users":
 
     if users:
         colors = ["#ff9a9e","#fad0c4","#fbc2eb","#a6c1ee","#84fab0","#8fd3f4"]
+        st.markdown('<div class="capsule-container">', unsafe_allow_html=True)
         for i, u in enumerate(users):
             color = colors[i % len(colors)]
             st.markdown(f"""
@@ -231,6 +230,6 @@ elif st.session_state.menu == "Manage Users":
                     <div class="user-info"><b>Email:</b> {u['email']}</div>
                 </div>
             """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
     else:
         st.info("No users found.")
-
