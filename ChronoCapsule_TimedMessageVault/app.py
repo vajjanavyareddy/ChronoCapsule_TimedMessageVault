@@ -19,13 +19,10 @@ supabase_key = st.secrets["supabase"]["key"]
 supabase = create_client(supabase_url, supabase_key)
 
 # -------------------
-# SESSION MENU STATE
+# SESSION STATE MENU
 # -------------------
 if "menu" not in st.session_state:
-    st.session_state.menu = "Home"
-
-def select_menu(choice):
-    st.session_state.menu = choice
+    st.session_state.menu = "Create Capsule"
 
 # -------------------
 # GLOBAL CSS
@@ -40,11 +37,14 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f4f8;}
     border-radius:14px; background: linear-gradient(90deg,#6a11cb,#2575fc); margin-bottom:2rem;
     box-shadow:0 4px 12px rgba(0,0,0,0.25);
 }
-.menu-btn {
-    border-radius:14px; padding:1rem; font-size:18px; font-weight:600; color:white;
-    text-align:center; margin-bottom:1rem; cursor:pointer; transition:all 0.3s ease;
+
+.menu-card {
+    padding:20px; margin-bottom:20px; border-radius:16px; text-align:center;
+    color:white; font-weight:600; font-size:1.1rem; cursor:pointer;
+    transition:all 0.3s ease; box-shadow:0 4px 12px rgba(0,0,0,0.2);
 }
-.menu-btn:hover {transform:translateY(-3px); box-shadow:0 6px 12px rgba(0,0,0,0.2);}
+.menu-card:hover {transform:translateY(-4px); box-shadow:0 8px 18px rgba(0,0,0,0.25);}
+
 .capsule-card, .user-card {
     border-radius:16px; padding:1.5rem; margin-bottom:1rem; box-shadow:0 4px 12px rgba(0,0,0,0.1);
     transition: all 0.3s ease;
@@ -54,8 +54,6 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f4f8;}
 .capsule-message, .user-info {color:#555; font-size:0.95rem; margin-top:4px;}
 .status-pending {color:#E67E22; font-weight:600;}
 .status-delivered {color:#27AE60; font-weight:600;}
-.stTextInput>div>div>input, textarea, select {border-radius:10px !important; border:1px solid #dce1e7 !important; box-shadow:0px 2px 6px rgba(0,0,0,0.05);}
-.stButton>button {border-radius:12px; padding:10px 24px; font-weight:600; color:white; border:none; box-shadow:0 4px 12px rgba(0,0,0,0.2);}
 </style>
 """, unsafe_allow_html=True)
 
@@ -65,21 +63,22 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f4f8;}
 st.markdown('<div class="main-header">⏳ ChronoCapsule — Timed Messages</div>', unsafe_allow_html=True)
 
 # -------------------
-# MENU CARDS (Sidebar)
+# COLORFUL SIDEBAR MENU CARDS
 # -------------------
-menu_choices = [
+menu_options = [
     {"name":"Create Capsule","color":"#6a11cb"},
     {"name":"View Capsules","color":"#2575fc"},
     {"name":"Manage Users","color":"#ff6a00"}
 ]
 
-with st.sidebar:
-    for m in menu_choices:
-        if st.button(m["name"], key=m["name"], help=f"Go to {m['name']}"):
-            select_menu(m["name"])
+st.sidebar.markdown("### 📋 Menu", unsafe_allow_html=True)
+for option in menu_options:
+    # Use clickable markdown with query param simulation
+    if st.sidebar.button(option["name"], key=option["name"]):
+        st.session_state.menu = option["name"]
 
 # -------------------
-# CREATE CAPSULE
+# CREATE CAPSULE PAGE
 # -------------------
 if st.session_state.menu == "Create Capsule":
     st.subheader("📝 Create Capsule")
@@ -123,7 +122,7 @@ if st.session_state.menu == "Create Capsule":
                 st.error(f"Error: {e}")
 
 # -------------------
-# VIEW CAPSULES
+# VIEW CAPSULES PAGE
 # -------------------
 elif st.session_state.menu == "View Capsules":
     st.subheader("📦 View Capsules")
@@ -146,7 +145,6 @@ elif st.session_state.menu == "View Capsules":
         if df.empty:
             st.info("No capsules found.")
         else:
-            # colorful cards for capsules
             colors = ["#f6d365","#fda085","#a1c4fd","#c2e9fb","#84fab0","#8fd3f4"]
             for i, (_, row) in enumerate(df.iterrows()):
                 scheduled_str = row["scheduled_ist"].strftime('%Y-%m-%d %H:%M') if row["scheduled_ist"] else "N/A"
@@ -166,7 +164,7 @@ elif st.session_state.menu == "View Capsules":
         st.info("No capsules found.")
 
 # -------------------
-# MANAGE USERS
+# MANAGE USERS PAGE
 # -------------------
 elif st.session_state.menu == "Manage Users":
     st.subheader("👥 Manage Users")
