@@ -31,20 +31,17 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 body {font-family: 'Poppins', sans-serif; background-color:#f0f4f8;}
-
 .main-header {
     text-align:center; font-size:2.2rem; font-weight:700; color:white; padding:1rem;
     border-radius:14px; background: linear-gradient(90deg,#6a11cb,#2575fc); margin-bottom:2rem;
     box-shadow:0 4px 12px rgba(0,0,0,0.25);
 }
-
 .menu-card {
-    padding:20px; margin-bottom:20px; border-radius:16px; text-align:center;
+    padding:20px; margin-bottom:15px; border-radius:16px; text-align:center;
     color:white; font-weight:600; font-size:1.1rem; cursor:pointer;
     transition:all 0.3s ease; box-shadow:0 4px 12px rgba(0,0,0,0.2);
 }
 .menu-card:hover {transform:translateY(-4px); box-shadow:0 8px 18px rgba(0,0,0,0.25);}
-
 .capsule-card, .user-card {
     border-radius:16px; padding:1.5rem; margin-bottom:1rem; box-shadow:0 4px 12px rgba(0,0,0,0.1);
     transition: all 0.3s ease;
@@ -72,10 +69,16 @@ menu_options = [
 ]
 
 st.sidebar.markdown("### 📋 Menu", unsafe_allow_html=True)
+
 for option in menu_options:
-    # Use clickable markdown with query param simulation
-    if st.sidebar.button(option["name"], key=option["name"]):
-        st.session_state.menu = option["name"]
+    clicked = st.sidebar.markdown(
+        f"""<div class="menu-card" style="background: linear-gradient(135deg,{option['color']},{option['color']}99);"
+        onclick="window.location.href='#';">{option['name']}</div>""",
+        unsafe_allow_html=True
+    )
+    if st.sidebar.button(option['name'], key=option['name']):
+        st.session_state.menu = option['name']
+        st.experimental_rerun()
 
 # -------------------
 # CREATE CAPSULE PAGE
@@ -147,7 +150,7 @@ elif st.session_state.menu == "View Capsules":
         else:
             colors = ["#f6d365","#fda085","#a1c4fd","#c2e9fb","#84fab0","#8fd3f4"]
             for i, (_, row) in enumerate(df.iterrows()):
-                scheduled_str = row["scheduled_ist"].strftime('%Y-%m-%d %H:%M') if row["scheduled_ist"] else "N/A"
+                scheduled_str = row["scheduled_ist"].strftime('%Y-%m-%d %H:%M') if pd.notnull(row["scheduled_ist"]) else "N/A"
                 color = colors[i % len(colors)]
                 st.markdown(f"""
                     <div class="capsule-card" style="background: linear-gradient(120deg,{color},{color}90);">
