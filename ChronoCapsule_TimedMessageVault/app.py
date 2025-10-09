@@ -62,6 +62,7 @@ st.markdown("""
 
 body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
 
+/* Header */
 .main-header {
     text-align:center; font-size:2.5rem; font-weight:700; 
     color:white; padding:1.5rem; border-radius:14px; 
@@ -69,21 +70,30 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
     margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);
 }
 
-/* Sidebar radio buttons as cards */
-.stRadio>div>label {
-    display:block; padding:20px; margin-bottom:15px; border-radius:16px;
-    font-size:1.2rem; font-weight:600; text-align:center; cursor:pointer;
-    color:white; transition: all 0.3s ease;
+/* Sidebar radio buttons styled as attractive cards */
+.stRadio>div {
+    display:flex; flex-direction:column; gap:15px; padding-top:10px;
 }
 
-/* Individual radio button gradients (light) */
+.stRadio>div>label {
+    display:block; padding:22px; border-radius:18px; font-size:1.25rem;
+    font-weight:600; text-align:center; cursor:pointer; color:white;
+    box-shadow:0 4px 10px rgba(0,0,0,0.15); transition: all 0.3s ease;
+}
+
+/* Individual radio button gradients (distinct classic colors) */
 .stRadio>div>label:nth-child(1) { background: linear-gradient(135deg, #a7c957, #d3e27f); }  /* Create Capsule - light green */
 .stRadio>div>label:nth-child(2) { background: linear-gradient(135deg, #3399ff, #99ccff); }  /* View Capsules - light blue */
 .stRadio>div>label:nth-child(3) { background: linear-gradient(135deg, #ff7f50, #ffb690); }  /* Manage Users - light orange */
 
-/* Hover effect for "card" buttons */
+/* Hover effect to lift card */
 .stRadio>div>label:hover {
-    transform: translateY(-3px); box-shadow:0 6px 18px rgba(0,0,0,0.2);
+    transform: translateY(-4px); box-shadow:0 8px 20px rgba(0,0,0,0.25);
+}
+
+/* Selected radio button effect */
+.stRadio>div>input:checked + label {
+    box-shadow:0 8px 25px rgba(0,0,0,0.35); transform: translateY(-2px);
 }
 
 /* Capsule/User Cards */
@@ -234,6 +244,7 @@ elif st.session_state.menu == "Manage Users":
             """, unsafe_allow_html=True)
     else:
         st.info("No users found.")
+
 
 
 
