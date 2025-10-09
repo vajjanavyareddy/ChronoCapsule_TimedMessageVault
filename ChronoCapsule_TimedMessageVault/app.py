@@ -65,22 +65,25 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
 .main-header {
     text-align:center; font-size:2.5rem; font-weight:700; 
     color:white; padding:1.5rem; border-radius:14px; 
-    background: linear-gradient(90deg, #6A0DAD, #9B30FF);  /* Elegant purple gradient */
+    background: linear-gradient(90deg, #6A0DAD, #9B30FF);
     margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);
 }
 
-/* Sidebar radio buttons custom colors */
-.stRadio>div>label:nth-child(1) { background: linear-gradient(135deg, #6a994e, #a7c957); }  /* Create Capsule - green shades */
-.stRadio>div>label:nth-child(2) { background: linear-gradient(135deg, #0066cc, #3399ff); }  /* View Capsules - blue shades */
-.stRadio>div>label:nth-child(3) { background: linear-gradient(135deg, #cc5500, #ff7f50); }  /* Manage Users - orange shades */
-
+/* Sidebar radio buttons as cards */
 .stRadio>div>label {
-    color:white; font-weight:600; padding:14px; margin-bottom:10px; 
-    border-radius:12px; font-size:1.1rem; cursor:pointer; text-align:center;
-    transition: all 0.3s ease;
+    display:block; padding:20px; margin-bottom:15px; border-radius:16px;
+    font-size:1.2rem; font-weight:600; text-align:center; cursor:pointer;
+    color:white; transition: all 0.3s ease;
 }
+
+/* Individual radio button gradients (light) */
+.stRadio>div>label:nth-child(1) { background: linear-gradient(135deg, #a7c957, #d3e27f); }  /* Create Capsule - light green */
+.stRadio>div>label:nth-child(2) { background: linear-gradient(135deg, #3399ff, #99ccff); }  /* View Capsules - light blue */
+.stRadio>div>label:nth-child(3) { background: linear-gradient(135deg, #ff7f50, #ffb690); }  /* Manage Users - light orange */
+
+/* Hover effect for "card" buttons */
 .stRadio>div>label:hover {
-    transform: translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.25);
+    transform: translateY(-3px); box-shadow:0 6px 18px rgba(0,0,0,0.2);
 }
 
 /* Capsule/User Cards */
@@ -95,6 +98,7 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
 .status-delivered {color:#27AE60; font-weight:600;}
 </style>
 """, unsafe_allow_html=True)
+
 
 
 
@@ -230,5 +234,6 @@ elif st.session_state.menu == "Manage Users":
             """, unsafe_allow_html=True)
     else:
         st.info("No users found.")
+
 
 
