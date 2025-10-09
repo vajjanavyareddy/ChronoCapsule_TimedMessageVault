@@ -27,10 +27,12 @@ def send_email(recipient, subject, message):
     try:
         sender_email = st.secrets["email"]["address"]
         sender_password = st.secrets["email"]["password"]
+
         msg = MIMEText(message, "html")
         msg["Subject"] = subject
         msg["From"] = sender_email
         msg["To"] = recipient
+
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(sender_email, sender_password)
             server.send_message(msg)
@@ -43,7 +45,7 @@ def send_email(recipient, subject, message):
 # SESSION STATE
 # -------------------
 if "page" not in st.session_state:
-    st.session_state.page = "home"
+    st.session_state.page = "Create Capsule"
 
 # -------------------
 # GLOBAL CSS
@@ -52,9 +54,9 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
-.main-header {text-align:center; font-size:2.5rem; font-weight:700; color:white; padding:1.5rem; border-radius:14px; background: linear-gradient(90deg,#6a11cb,#2575fc); margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);}
-.menu-card {padding:2rem; border-radius:14px; text-align:center; font-size:1.2rem; font-weight:600; color:white; cursor:pointer; transition: all 0.3s ease; box-shadow:0 4px 12px rgba(0,0,0,0.15);}
-.menu-card:hover {transform: translateY(-5px); box-shadow:0 8px 20px rgba(0,0,0,0.25);}
+.main-header {text-align:center; font-size:2.5rem; font-weight:700; color:white; padding:1.5rem; border-radius:14px; background: linear-gradient(90deg, #6a11cb, #2575fc); margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);}
+.menu-card {padding:25px; margin-bottom:15px; border-radius:20px; text-align:center; font-size:1.3rem; font-weight:700; color:white; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.25); transition: all 0.3s ease;}
+.menu-card:hover {transform:translateY(-5px); box-shadow:0 8px 20px rgba(0,0,0,0.35);}
 .capsule-card, .user-card {border-radius:16px; padding:1.5rem; margin-bottom:1rem; box-shadow:0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;}
 .capsule-card:hover, .user-card:hover {transform:translateY(-4px); box-shadow:0 8px 18px rgba(0,0,0,0.15);}
 .capsule-title, .user-name {font-weight:600; font-size:1.2rem; color:#2C3E50;}
@@ -72,29 +74,38 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
 st.markdown('<div class="main-header">⏳ ChronoCapsule — Timed Messages</div>', unsafe_allow_html=True)
 
 # -------------------
-# COLORFUL MENU CARDS
+# SIDEBAR MENU
 # -------------------
 menu_options = [
-    {"name":"Create Capsule","color":"#ff7e5f"},
-    {"name":"View Capsules","color":"#6a11cb"},
-    {"name":"Manage Users","color":"#43cea2"}
+    {"name": "Create Capsule", "color": "#ff7e5f"},
+    {"name": "View Capsules", "color": "#6a11cb"},
+    {"name": "Manage Users", "color": "#43cea2"}
 ]
 
-cols = st.columns(len(menu_options))
-for i, option in enumerate(menu_options):
-    with cols[i]:
-        if st.button(option["name"], key=option["name"], help=f"Go to {option['name']}"):
-            st.session_state.page = option["name"]
+st.sidebar.markdown("<h3 style='text-align:center;'>📋 Menu</h3>", unsafe_allow_html=True)
+
+for option in menu_options:
+    selected = st.session_state.page == option["name"]
+    bg_color = option["color"] if not selected else "#ffd700"  # highlight selected in gold
+    # Card clickable using session_state update
+    if st.sidebar.button(option["name"], key=option["name"], help="Click to navigate"):
+        st.session_state.page = option["name"]
+        st.experimental_rerun()
+    st.sidebar.markdown(f"""
+        <div class="menu-card" style="background: linear-gradient(135deg,{bg_color},{bg_color}aa);">
+            {option['name']}
+        </div>
+        """, unsafe_allow_html=True)
 
 # -------------------
-# PAGE RENDERING
+# PAGES
 # -------------------
 page = st.session_state.page
 
 # ---------- CREATE CAPSULE ----------
 if page == "Create Capsule":
     st.markdown('<div class="section-header">📝 Create Capsule</div><div class="divider"></div>', unsafe_allow_html=True)
-    
+
     try:
         users = supabase.table("users").select("*").execute().data
     except:
@@ -112,7 +123,6 @@ if page == "Create Capsule":
 
     title = st.text_input("Capsule Title")
     message = st.text_area("Capsule Message (HTML supported)")
-
     selected_date = st.date_input("Select Date", datetime.now().date())
     selected_time = st.time_input("Select Time", datetime.now().time())
     local_dt = datetime.combine(selected_date, selected_time)
@@ -138,6 +148,7 @@ if page == "Create Capsule":
 # ---------- VIEW CAPSULES ----------
 elif page == "View Capsules":
     st.markdown('<div class="section-header">📦 View Capsules</div><div class="divider"></div>', unsafe_allow_html=True)
+
     filter_status = st.radio("Filter By", ["All", "Pending", "Delivered"], horizontal=True)
 
     try:
@@ -150,13 +161,13 @@ elif page == "View Capsules":
         df["scheduled_time"] = pd.to_datetime(df.get("scheduled_time"), utc=True, errors="coerce")
         df["scheduled_ist"] = df["scheduled_time"].apply(lambda x: x + timedelta(hours=5, minutes=30) if pd.notnull(x) else None)
 
-        if filter_status=="Pending":
-            df = df[df["is_delivered"]==False]
-        elif filter_status=="Delivered":
-            df = df[df["is_delivered"]==True]
+        if filter_status == "Pending":
+            df = df[df["is_delivered"] == False]
+        elif filter_status == "Delivered":
+            df = df[df["is_delivered"] == True]
 
         if df.empty:
-            st.info("No capsules found.")
+            st.info("No capsules match filter.")
         else:
             colors = ["#f6d365","#fda085","#a1c4fd","#c2e9fb","#84fab0","#8fd3f4"]
             for i, (_, row) in enumerate(df.iterrows()):
