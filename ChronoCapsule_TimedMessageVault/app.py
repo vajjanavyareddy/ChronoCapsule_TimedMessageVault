@@ -53,6 +53,9 @@ if "menu" not in st.session_state:
 # -------------------
 # GLOBAL CSS
 # -------------------
+# -------------------
+# GLOBAL CSS
+# -------------------
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
@@ -66,12 +69,15 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
     margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);
 }
 
+/* Sidebar radio buttons custom colors */
+.stRadio>div>label:nth-child(1) { background: linear-gradient(135deg, #6a994e, #a7c957); }  /* Create Capsule - green shades */
+.stRadio>div>label:nth-child(2) { background: linear-gradient(135deg, #0066cc, #3399ff); }  /* View Capsules - blue shades */
+.stRadio>div>label:nth-child(3) { background: linear-gradient(135deg, #cc5500, #ff7f50); }  /* Manage Users - orange shades */
+
 .stRadio>div>label {
-    display:block; 
-    background: linear-gradient(135deg, #6a11cb, #2575fc); /* Distinct purple/blue */
-    color:white; font-weight:600; padding:14px; 
-    margin-bottom:10px; border-radius:12px; font-size:1.1rem;
-    cursor:pointer; text-align:center; transition: all 0.3s ease;
+    color:white; font-weight:600; padding:14px; margin-bottom:10px; 
+    border-radius:12px; font-size:1.1rem; cursor:pointer; text-align:center;
+    transition: all 0.3s ease;
 }
 .stRadio>div>label:hover {
     transform: translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.25);
@@ -89,6 +95,7 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
 .status-delivered {color:#27AE60; font-weight:600;}
 </style>
 """, unsafe_allow_html=True)
+
 
 
 # -------------------
@@ -223,4 +230,5 @@ elif st.session_state.menu == "Manage Users":
             """, unsafe_allow_html=True)
     else:
         st.info("No users found.")
+
 
