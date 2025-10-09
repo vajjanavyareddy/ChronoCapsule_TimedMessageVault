@@ -50,23 +50,34 @@ if "menu" not in st.session_state:
 # -------------------
 # GLOBAL CSS
 # -------------------
+# -------------------
+# GLOBAL CSS
+# -------------------
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
 body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
+
 .main-header {
-    text-align:center; font-size:2.5rem; font-weight:700; color:white;
-    padding:1.5rem; border-radius:14px; background: linear-gradient(90deg,#FFD700,#FF8C00);
+    text-align:center; font-size:2.5rem; font-weight:700; 
+    color:white; padding:1.5rem; border-radius:14px; 
+    background: linear-gradient(90deg, #6A0DAD, #9B30FF);  /* Elegant purple gradient */
     margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);
 }
+
 .stRadio>div>label {
-    display:block; background: linear-gradient(135deg, #FFDD00, #FF8C00);
-    color:#000; font-weight:600; padding:12px; margin-bottom:8px; border-radius:10px;
+    display:block; 
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* Distinct purple/blue */
+    color:white; font-weight:600; padding:14px; 
+    margin-bottom:10px; border-radius:12px; font-size:1.1rem;
     cursor:pointer; text-align:center; transition: all 0.3s ease;
 }
 .stRadio>div>label:hover {
-    transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transform: translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.25);
 }
+
+/* Capsule/User Cards */
 .capsule-card, .user-card {
     border-radius:16px; padding:1.5rem; margin-bottom:1rem;
     box-shadow:0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;
@@ -78,6 +89,7 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
 .status-delivered {color:#27AE60; font-weight:600;}
 </style>
 """, unsafe_allow_html=True)
+
 
 # -------------------
 # HEADER
@@ -211,3 +223,4 @@ elif st.session_state.menu == "Manage Users":
             """, unsafe_allow_html=True)
     else:
         st.info("No users found.")
+
