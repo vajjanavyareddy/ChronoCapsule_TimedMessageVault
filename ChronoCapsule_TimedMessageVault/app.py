@@ -32,39 +32,39 @@ background: linear-gradient(90deg,#6a11cb,#2575fc); margin-bottom:2rem; box-shad
 .capsule-message, .user-info {color:#555; font-size:1rem; margin-top:6px;}
 .status-pending {color:#E67E22; font-weight:600;}
 .status-delivered {color:#27AE60; font-weight:600;}
-.menu-card {border-radius:16px; padding:20px; margin-bottom:20px; font-weight:600; font-size:18px; text-align:center; color:white; cursor:pointer; transition:all 0.3s ease; width:200px;}
-.menu-card:hover {transform:translateY(-4px); opacity:0.9;}
+.stButton>button {border-radius:16px; padding:20px; font-size:18px; font-weight:600; color:white; margin-bottom:10px; width:200px;}
+.stButton>button:hover {transform:translateY(-3px); opacity:0.9;}
 </style>
 """, unsafe_allow_html=True)
 
 # Header
 st.markdown('<div class="main-header">⏳ ChronoCapsule — Timed Messages</div>', unsafe_allow_html=True)
 
-# Sidebar menu cards
-menu_options = [
-    {"name": "Create Capsule", "color": "#3498DB", "icon": "📝"},
-    {"name": "View Capsules", "color": "#2ECC71", "icon": "📦"},
-    {"name": "Manage Users", "color": "#F39C12", "icon": "👥"}
-]
-
+# ------------------- Sidebar Menu -------------------
 with st.sidebar:
     st.markdown("<h4 style='text-align:center;'>📋 MENU</h4>", unsafe_allow_html=True)
-    for option in menu_options:
-        if st.button(f"{option['icon']} {option['name']}", key=option['name']):
-            st.session_state.active_menu = option['name']
-        # Only **visual card** (no extra duplicate)
-        st.markdown(f"""
-        <div class="menu-card" style="background:{option['color']}">
-            {option['icon']} {option['name']}
-        </div>
-        """, unsafe_allow_html=True)
 
-# Active menu
+    # Menu buttons with different classic colors
+    if st.button("📝 Create Capsule", key="create_capsule"):
+        st.session_state.active_menu = "Create Capsule"
+    if st.button("📦 View Capsules", key="view_capsules"):
+        st.session_state.active_menu = "View Capsules"
+    if st.button("👥 Manage Users", key="manage_users"):
+        st.session_state.active_menu = "Manage Users"
+
+    # Custom button colors using JS trick
+    st.markdown("""
+    <style>
+    button[kind='primary']:nth-of-type(1) {background:#3498DB;}
+    button[kind='primary']:nth-of-type(2) {background:#2ECC71;}
+    button[kind='primary']:nth-of-type(3) {background:#F39C12;}
+    </style>
+    """, unsafe_allow_html=True)
+
+# ------------------- Active Menu -------------------
 menu = st.session_state.active_menu
 
-# -------------------
-# CREATE CAPSULE
-# -------------------
+# ------------------- CREATE CAPSULE -------------------
 if menu == "Create Capsule":
     st.markdown('<div class="section-header">📝 Create Capsule</div><div class="divider"></div>', unsafe_allow_html=True)
     try:
@@ -107,9 +107,7 @@ if menu == "Create Capsule":
             except Exception as e:
                 st.error(f"Error: {e}")
 
-# -------------------
-# VIEW CAPSULES
-# -------------------
+# ------------------- VIEW CAPSULES -------------------
 elif menu == "View Capsules":
     st.markdown('<div class="section-header">📦 View Capsules</div><div class="divider"></div>', unsafe_allow_html=True)
     filter_status = st.radio("Filter By", ["All", "Pending", "Delivered"], horizontal=True)
@@ -144,9 +142,7 @@ elif menu == "View Capsules":
     else:
         st.info("No capsules found.")
 
-# -------------------
-# MANAGE USERS
-# -------------------
+# ------------------- MANAGE USERS -------------------
 elif menu == "Manage Users":
     st.markdown('<div class="section-header">👥 Manage Users</div><div class="divider"></div>', unsafe_allow_html=True)
     name = st.text_input("Name")
