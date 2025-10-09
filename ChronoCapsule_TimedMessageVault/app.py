@@ -153,9 +153,11 @@ if st.session_state.menu == "Create Capsule":
 # -------------------
 # PAGE: VIEW CAPSULES
 # -------------------
-elif st.session_state.menu == "View Capsules":
+# ------------------- VIEW CAPSULES PAGE -------------------
+elif menu == "View Capsules":
     st.subheader("📦 View Capsules")
     filter_status = st.radio("Filter By", ["All", "Pending", "Delivered"], horizontal=True)
+    
     try:
         data = supabase.table("capsules").select("*").execute().data
     except:
@@ -166,15 +168,18 @@ elif st.session_state.menu == "View Capsules":
         df["scheduled_time"] = pd.to_datetime(df["scheduled_time"], utc=True, errors="coerce")
         df["scheduled_ist"] = df["scheduled_time"].apply(lambda x: x + timedelta(hours=5, minutes=30) if pd.notnull(x) else None)
 
-        if filter_status=="Pending":
-            df = df[df["is_delivered"]==False]
-        elif filter_status=="Delivered":
-            df = df[df["is_delivered"]==True]
+        if filter_status == "Pending":
+            df = df[df["is_delivered"] == False]
+        elif filter_status == "Delivered":
+            df = df[df["is_delivered"] == True]
 
         if df.empty:
             st.info("No capsules found.")
         else:
             colors = ["#f6d365","#fda085","#a1c4fd","#c2e9fb","#84fab0","#8fd3f4"]
+            
+            # Responsive horizontal container
+            st.markdown('<div class="capsule-container">', unsafe_allow_html=True)
             for i, (_, row) in enumerate(df.iterrows()):
                 scheduled_str = row["scheduled_ist"].strftime('%Y-%m-%d %H:%M') if pd.notnull(row["scheduled_ist"]) else "N/A"
                 color = colors[i % len(colors)]
@@ -189,8 +194,10 @@ elif st.session_state.menu == "View Capsules":
                         </div>
                     </div>
                 """, unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
     else:
         st.info("No capsules found.")
+
 
 # -------------------
 # PAGE: MANAGE USERS
@@ -226,3 +233,4 @@ elif st.session_state.menu == "Manage Users":
             """, unsafe_allow_html=True)
     else:
         st.info("No users found.")
+
