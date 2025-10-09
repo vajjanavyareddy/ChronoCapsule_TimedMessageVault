@@ -75,11 +75,9 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
 
 /* Capsule/User Cards */
 .capsule-card, .user-card {
-    flex: 0 0 auto;
-    width: 300px;
-    border-radius:16px; padding:1.5rem; margin-bottom:1rem;
+    flex: 0 0 300px;
+    border-radius:16px; padding:1.5rem; margin-bottom:20px;
     box-shadow:0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;
-    display: inline-block;
 }
 .capsule-card:hover, .user-card:hover {
     transform:translateY(-4px);
@@ -90,12 +88,12 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
 .status-pending {color:#E67E22; font-weight:600;}
 .status-delivered {color:#27AE60; font-weight:600;}
 
-/* Horizontal scrollable container */
+/* Responsive grid container */
 .capsule-container, .user-container {
     display: flex;
+    flex-wrap: wrap;
     gap: 20px;
-    overflow-x: auto;
-    padding-bottom: 10px;
+    justify-content: flex-start;
 }
 </style>
 """, unsafe_allow_html=True)
