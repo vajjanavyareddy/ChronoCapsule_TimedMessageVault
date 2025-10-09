@@ -38,12 +38,14 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 body {font-family: 'Poppins', sans-serif; background-color:#f9fafc;}
+
 .main-header {
     text-align:center; font-size:2rem; font-weight:700; color:white; padding:1rem; border-radius:14px;
     background: linear-gradient(90deg, #6a11cb, #2575fc); margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);
 }
 .section-header {font-size:1.5rem; font-weight:600; color:#283E51; margin-bottom:0.5rem;}
 .divider {height:3px; width:80px; background: linear-gradient(90deg, #4B79A1, #283E51); border-radius:2px; margin-bottom:1.5rem;}
+
 .capsule-card, .user-card {
     background:#fff; border-radius:14px; padding:1.5rem; margin-bottom:1rem; box-shadow:0 4px 12px rgba(0,0,0,0.1);
     transition: all 0.3s ease;
@@ -56,12 +58,15 @@ body {font-family: 'Poppins', sans-serif; background-color:#f9fafc;}
 .stButton>button {background: linear-gradient(90deg, #4B79A1, #283E51); color:white; font-weight:600; border-radius:12px; padding:10px 24px; border:none; transition: all 0.3s ease;}
 .stButton>button:hover {background: linear-gradient(90deg, #283E51, #4B79A1); transform:translateY(-2px);}
 .stTextInput>div>div>input, textarea, select {border-radius:10px !important; border:1px solid #dce1e7 !important; box-shadow:0px 2px 6px rgba(0,0,0,0.05);}
+
 .sidebar-card {
-    padding:15px; margin:10px 0; border-radius:12px; text-align:center;
-    background:#f0f0f0; font-weight:500; cursor:pointer; transition:all 0.3s ease; box-shadow:0 3px 8px rgba(0,0,0,0.08);
+    padding:15px; margin:10px 0; border-radius:12px; text-align:center; font-weight:600; cursor:pointer; transition:all 0.3s ease; color:white;
 }
-.sidebar-card.active {background: linear-gradient(90deg,#6a11cb,#2575fc); color:white; font-weight:600; box-shadow:0 6px 14px rgba(0,0,0,0.15);}
-.sidebar-card:hover {transform:translateY(-2px);}
+.sidebar-card:hover {transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+.create {background: linear-gradient(90deg,#3498db,#2980b9);}
+.view {background: linear-gradient(90deg,#2ecc71,#27ae60);}
+.manage {background: linear-gradient(90deg,#9b59b6,#8e44ad);}
+.sidebar-card.active {box-shadow:0 6px 18px rgba(0,0,0,0.25); transform:translateY(-3px);}
 </style>
 """, unsafe_allow_html=True)
 
@@ -72,20 +77,21 @@ st.markdown('<div class="main-header">⏳ ChronoCapsule — Timed Messages</div>
 if "active_menu" not in st.session_state:
     st.session_state.active_menu = "Create Capsule"
 
-menu_options = ["Create Capsule", "View Capsules", "Manage Users"]
+menu_colors = {"Create Capsule":"create", "View Capsules":"view", "Manage Users":"manage"}
+menu_options = list(menu_colors.keys())
+
 with st.sidebar:
     st.markdown("<div style='margin-top:1rem;'></div>", unsafe_allow_html=True)
     for option in menu_options:
+        color_class = menu_colors[option]
         is_active = st.session_state.active_menu == option
         if st.button(option, key=f"btn_{option}"):
             st.session_state.active_menu = option
-        # Display card
         st.markdown(
-            f"<div class='sidebar-card {'active' if is_active else ''}'>{option}</div>",
+            f"<div class='sidebar-card {color_class} {'active' if is_active else ''}'>{option}</div>",
             unsafe_allow_html=True
         )
 
-# ------------------- MAIN PAGES -------------------
 menu = st.session_state.active_menu
 
 # ------------------- CREATE CAPSULE -------------------
@@ -110,7 +116,6 @@ if menu == "Create Capsule":
     title = st.text_input("Capsule Title")
     message = st.text_area("Capsule Message (HTML supported)")
 
-    # Schedule
     selected_date = st.date_input("Select Date", datetime.now().date())
     selected_time = st.time_input("Select Time", datetime.now().time())
     local_dt = datetime.combine(selected_date, selected_time)
