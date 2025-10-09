@@ -42,19 +42,40 @@ if "menu" not in st.session_state:
 # ------------------- GLOBAL CSS -------------------
 st.markdown("""
 <style>
+/* Header / Title */
+.main-header {
+    text-align:center; 
+    font-size:2.5rem; 
+    font-weight:700; 
+    color:white; 
+    padding:1.5rem; 
+    border-radius:14px; 
+    background: linear-gradient(90deg, #6A5ACD, #7B68EE); /* Elegant purple gradient */
+    margin-bottom:2rem; 
+    box-shadow:0 4px 12px rgba(0,0,0,0.25);
+}
+
 /* Capsule/User Cards */
 .capsule-card, .user-card {
-    border-radius:16px; padding:1.25rem; margin-bottom:1rem;
-    box-shadow:0 4px 10px rgba(0,0,0,0.08); transition: all 0.3s ease;
+    border-radius:16px; 
+    padding:1.25rem; 
+    margin-bottom:1rem;
+    box-shadow:0 4px 10px rgba(0,0,0,0.08); 
+    transition: all 0.3s ease;
 }
 .capsule-card:hover, .user-card:hover {
-    transform:translateY(-3px); box-shadow:0 8px 15px rgba(0,0,0,0.12);
+    transform:translateY(-3px); 
+    box-shadow:0 8px 15px rgba(0,0,0,0.12);
 }
 .capsule-title, .user-name {
-    font-weight:600; font-size:1.1rem; color:#2C3E50;
+    font-weight:600; 
+    font-size:1.1rem; 
+    color:#2C3E50;
 }
 .capsule-message, .user-info {
-    color:#555; font-size:0.95rem; margin-top:4px;
+    color:#555; 
+    font-size:0.95rem; 
+    margin-top:4px;
 }
 .status-pending {color:#E67E22; font-weight:600;}
 .status-delivered {color:#27AE60; font-weight:600;}
@@ -196,6 +217,7 @@ elif menu == "Manage Users":
                     """, unsafe_allow_html=True)
     else:
         st.info("No users found.")
+
 
 
 
