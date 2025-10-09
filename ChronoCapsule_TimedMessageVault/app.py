@@ -170,9 +170,8 @@ elif menu == "View Capsules":
         if df.empty:
             st.info("No capsules found.")
         else:
-            colors = ["#f6d365","#fda085","#a1c4fd","#c2e9fb","#84fab0","#8fd3f4"]
+            colors = ["#D6EAF8","#D5F5E3","#FCF3CF","#FADBD8","#E8DAEF","#F5EEF8"]  # Classic soft colors
 
-            # Display capsules in columns, 3 per row
             num_cols = 3
             for i in range(0, len(df), num_cols):
                 cols = st.columns(num_cols, gap="medium")
@@ -181,7 +180,7 @@ elif menu == "View Capsules":
                     color = colors[(i+j) % len(colors)]
                     with cols[j]:
                         st.markdown(f"""
-                            <div class="capsule-card" style="background: linear-gradient(120deg,{color},{color}90);">
+                            <div class="capsule-card" style="background: {color};">
                                 <div class="capsule-title">🎯 {row['title']}</div>
                                 <div class="capsule-message">{row['message']}</div>
                                 <div class="capsule-message">
@@ -229,4 +228,5 @@ elif menu == "Manage Users":
         st.markdown('</div>', unsafe_allow_html=True)
     else:
         st.info("No users found.")
+
 
