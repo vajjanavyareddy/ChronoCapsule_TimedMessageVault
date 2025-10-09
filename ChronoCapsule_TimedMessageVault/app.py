@@ -23,11 +23,11 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 body {font-family: 'Poppins', sans-serif; background-color:#f0f4f8;}
 .main-header {text-align:center; font-size:2.2rem; font-weight:700; color:white; padding:1rem; border-radius:14px; background: linear-gradient(90deg, #6a11cb, #2575fc); margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);}
-.menu-card {padding:20px; margin:15px 0; border-radius:16px; font-weight:600; font-size:1.2rem; color:white; text-align:center; cursor:pointer; transition: all 0.3s ease;}
+.menu-button {width:100%; padding:1rem; margin-bottom:1rem; border:none; border-radius:16px; font-weight:600; font-size:1.2rem; color:white; cursor:pointer; transition:all 0.3s ease;}
 .menu-create {background: linear-gradient(90deg, #ff7e5f, #feb47b);}
 .menu-view {background: linear-gradient(90deg, #43cea2, #185a9d);}
 .menu-users {background: linear-gradient(90deg, #ff6a00, #ee0979);}
-.menu-card:hover {transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.25);}
+.menu-button:hover {transform:translateY(-4px); box-shadow:0 8px 20px rgba(0,0,0,0.25);}
 .capsule-card, .user-card {background:#fff; border-radius:14px; padding:1.5rem; margin-bottom:1rem; box-shadow:0 4px 12px rgba(0,0,0,0.1); transition:all 0.3s ease;}
 .capsule-card:hover, .user-card:hover {transform:translateY(-4px); box-shadow:0 8px 18px rgba(0,0,0,0.15);}
 .capsule-title, .user-name {font-weight:600; font-size:1.2rem; color:#2C3E50;}
@@ -42,29 +42,14 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f4f8;}
 # ------------------- HEADER -------------------
 st.markdown('<div class="main-header">⏳ ChronoCapsule — Timed Messages</div>', unsafe_allow_html=True)
 
-# ------------------- SIDEBAR MENU AS CARDS -------------------
-menu_html = f"""
-<div class="menu-card menu-create" onclick="window.parent.postMessage({{'menu':'Create Capsule'}}, '*')">📝 Create Capsule</div>
-<div class="menu-card menu-view" onclick="window.parent.postMessage({{'menu':'View Capsules'}}, '*')">📦 View Capsules</div>
-<div class="menu-card menu-users" onclick="window.parent.postMessage({{'menu':'Manage Users'}}, '*')">👥 Manage Users</div>
-"""
-
-st.sidebar.markdown(menu_html, unsafe_allow_html=True)
-
-# JS listener to handle clicks
-st.components.v1.html("""
-<script>
-window.addEventListener('message', event => {
-    const menu = event.data.menu;
-    fetch(window.location.href, {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'menu='+menu});
-});
-</script>
-""", height=0)
-
-# ------------------- READ POST DATA -------------------
-import streamlit.components.v1 as components
-if components._get_query_params().get("menu"):
-    st.session_state.menu = components._get_query_params()["menu"][0]
+# ------------------- SIDEBAR MENU -------------------
+with st.sidebar:
+    if st.button("📝 Create Capsule", key="menu_create"):
+        st.session_state.menu = "Create Capsule"
+    if st.button("📦 View Capsules", key="menu_view"):
+        st.session_state.menu = "View Capsules"
+    if st.button("👥 Manage Users", key="menu_users"):
+        st.session_state.menu = "Manage Users"
 
 menu = st.session_state.menu
 
