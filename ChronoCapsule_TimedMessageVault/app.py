@@ -1,5 +1,5 @@
-import streamlit as st  # type: ignore
-import pandas as pd  # type: ignore
+import streamlit as st
+import pandas as pd
 from supabase import create_client
 from datetime import datetime, timedelta
 import smtplib
@@ -41,12 +41,80 @@ def send_email(recipient, subject, message):
         st.error(f"❌ Failed to send email: {e}")
         return False
 
-
 # -------------------
 # HEADER
 # -------------------
+st.markdown("""
+    <style>
+        h1 {
+            text-align: center;
+            color: #2C3E50;
+            font-family: 'Poppins', sans-serif;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #555;
+            font-size: 18px;
+            margin-bottom: 40px;
+            font-family: 'Poppins', sans-serif;
+        }
+        .capsule-card {
+            padding: 18px;
+            margin: 15px 0;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #ffffff, #f9f9f9);
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.07);
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+        .capsule-card:hover {
+            transform: scale(1.01);
+            box-shadow: 0px 6px 18px rgba(0,0,0,0.1);
+        }
+        .capsule-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2C3E50;
+            margin-bottom: 5px;
+        }
+        .capsule-message {
+            color: #555;
+            margin-bottom: 12px;
+        }
+        .capsule-info {
+            font-size: 14px;
+            color: #444;
+            background-color: #f1f3f4;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .status-pending {
+            color: #E67E22;
+            font-weight: 600;
+        }
+        .status-delivered {
+            color: #27AE60;
+            font-weight: 600;
+        }
+        .stButton>button {
+            background: linear-gradient(90deg, #2C3E50, #4CA1AF);
+            color: white;
+            font-weight: 600;
+            border-radius: 10px;
+            padding: 8px 20px;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .stButton>button:hover {
+            background: linear-gradient(90deg, #4CA1AF, #2C3E50);
+            transform: translateY(-2px);
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 st.title("⏳ ChronoCapsule Dashboard")
-st.markdown("Create, schedule, and deliver digital time capsules 📦")
+st.markdown("<p class='subtitle'>Create, schedule, and deliver your memories in time — elegantly. 📦</p>", unsafe_allow_html=True)
 
 # -------------------
 # SIDEBAR MENU
@@ -89,17 +157,11 @@ if menu == "Create Capsule":
     selected_date = st.date_input("Select Date", value=st.session_state["scheduled_date"])
     selected_time = st.time_input("Select Time", value=st.session_state["scheduled_time"])
 
-    # Combine into IST datetime
     local_dt = datetime.combine(selected_date, selected_time)
-
-    # Convert IST → UTC (IST is +5:30)
     scheduled_time_utc = local_dt - timedelta(hours=5, minutes=30)
 
-    # Save UTC time to database
-    st.write(f"🕒 Scheduled for (IST): {local_dt.strftime('%Y-%m-%d %H:%M')}")
-    st.write(f"🌍 Stored as (UTC): {scheduled_time_utc.strftime('%Y-%m-%d %H:%M')}")
+    st.info(f"🕒 Scheduled for (IST): {local_dt.strftime('%Y-%m-%d %H:%M')}  |  🌍 Stored as (UTC): {scheduled_time_utc.strftime('%Y-%m-%d %H:%M')}")
 
-    # Save capsule
     if st.button("Create Capsule ✅"):
         if not recipient_email:
             st.error("Please provide a recipient email.")
@@ -111,31 +173,18 @@ if menu == "Create Capsule":
                     "title": title,
                     "message": message,
                     "recipient_email": recipient_email,
-                    "scheduled_time": scheduled_time_utc.isoformat(),  # stored in UTC
+                    "scheduled_time": scheduled_time_utc.isoformat(),
                     "is_delivered": False
                 }).execute()
-                st.success("🎉 Capsule created and scheduled!")
-
-                # Optional: Send confirmation email immediately
-                send_now = st.checkbox("Send confirmation email now?")
-                if send_now:
-                    sent = send_email(
-                        recipient_email,
-                        f"Capsule Scheduled: {title}",
-                        f"<p>Your capsule titled <b>{title}</b> has been scheduled for delivery at {local_dt.strftime('%Y-%m-%d %H:%M %p IST')}.</p>"
-                    )
-                    if sent:
-                        st.info("📨 Confirmation email sent successfully!")
-
+                st.success("🎉 Capsule created and scheduled successfully!")
             except Exception as e:
                 st.error(f"Error creating capsule: {e}")
-
 
 # -------------------
 # VIEW CAPSULES
 # -------------------
 elif menu == "View Capsules":
-    st.subheader("📦 All Capsules")
+    st.subheader("📦 View Capsules")
 
     filter_status = st.radio("Filter by", ["All", "Pending", "Delivered"], horizontal=True)
 
@@ -147,10 +196,8 @@ elif menu == "View Capsules":
 
     if data:
         df = pd.DataFrame(data)
-
-        # --- NEW: create STD before iterating ---
-        df['scheduled_time'] = pd.to_datetime(df['scheduled_time'], utc=True, errors='coerce')
-        df['std'] = df['scheduled_time'] - timedelta(hours=5, minutes=30)  # UTC−05:30
+        df["scheduled_time"] = pd.to_datetime(df["scheduled_time"], utc=True, errors="coerce")
+        df["scheduled_ist"] = df["scheduled_time"] + timedelta(hours=5, minutes=30)
 
         if filter_status == "Pending":
             df = df[df["is_delivered"] == False]
@@ -161,21 +208,20 @@ elif menu == "View Capsules":
             st.info("No capsules match the selected filter.")
         else:
             for _, row in df.iterrows():
-                with st.container():
-                    st.markdown(f"""
-                    <div style="padding:15px; margin:10px 0; border-radius:10px; 
-                    box-shadow: 2px 2px 12px rgba(0,0,0,0.1); background-color:#f9f9f9;">
-                    <h4>🎯 {row['title']}</h4>
-                    <p>{row['message']}</p>
-                    <p><b>Recipient:</b> {row['recipient_email']}<br>
-                    <b>Scheduled (UTC):</b> {row['scheduled_time']}<br>
-                    <b>STD (UTC−05:30):</b> {row['std']}<br>
-                    <b>Status:</b> {"✅ Delivered" if row['is_delivered'] else "⌛ Pending"}</p>
+                st.markdown(f"""
+                <div class='capsule-card'>
+                    <div class='capsule-title'>🎯 {row['title']}</div>
+                    <div class='capsule-message'>{row['message']}</div>
+                    <div class='capsule-info'>
+                        <b>Recipient:</b> {row['recipient_email']}<br>
+                        <b>Scheduled (IST):</b> {row['scheduled_ist'].strftime('%Y-%m-%d %H:%M')}<br>
+                        <b>UTC Time:</b> {row['scheduled_time'].strftime('%Y-%m-%d %H:%M')}<br>
+                        <b>Status:</b> {"<span class='status-delivered'>✅ Delivered</span>" if row['is_delivered'] else "<span class='status-pending'>⌛ Pending</span>"}
                     </div>
-                    """, unsafe_allow_html=True)
+                </div>
+                """, unsafe_allow_html=True)
     else:
         st.info("No capsules found.")
-
 
 # -------------------
 # MANAGE USERS
@@ -201,6 +247,10 @@ elif menu == "Manage Users":
     if users:
         st.markdown("### Existing Users")
         df_users = pd.DataFrame(users)
-        st.table(df_users)
+        st.dataframe(df_users.style.set_properties(**{
+            'background-color': '#f9f9f9',
+            'border-color': 'white',
+            'color': '#2C3E50',
+        }))
     else:
         st.info("No users found.")
