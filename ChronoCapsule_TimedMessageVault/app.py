@@ -1,15 +1,4 @@
-import streamlit as st
-import pandas as pd
-from supabase import create_client
-from datetime import datetime, timedelta
-import warnings
 
-warnings.filterwarnings("ignore")
-
-# -------------------
-# PAGE CONFIG
-# -------------------
-st.set_page_config(page_title="ChronoCapsule", page_icon="⏳", layout="widimport streamlit as st
 import pandas as pd
 from supabase import create_client
 from datetime import datetime, timedelta
@@ -413,4 +402,5 @@ elif st.session_state.menu == "Manage Users":
             """, unsafe_allow_html=True)
     else:
         st.info("No users found.")
+
 
