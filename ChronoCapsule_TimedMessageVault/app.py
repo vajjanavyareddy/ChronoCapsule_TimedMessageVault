@@ -202,7 +202,7 @@ elif menu == "Manage Users":
     if st.button("Add User ➕"):
         if name and email:
             try:
-                supabase.table("users").insert({"name": name,"email": email}).execute()
+                supabase.table("users").insert({"name": name, "email": email}).execute()
                 st.success("✅ User added!")
             except Exception as e:
                 st.error(f"Error: {e}")
@@ -215,18 +215,24 @@ elif menu == "Manage Users":
         users = []
 
     if users:
-        colors = ["#ff9a9e","#fad0c4","#fbc2eb","#a6c1ee","#84fab0","#8fd3f4"]
-        st.markdown('<div class="user-container">', unsafe_allow_html=True)
-        for i, u in enumerate(users):
-            color = colors[i % len(colors)]
-            st.markdown(f"""
-                <div class="user-card" style="background: linear-gradient(120deg,{color},{color}90);">
-                    <div class="user-name">👤 {u['name']}</div>
-                    <div class="user-info"><b>Email:</b> {u['email']}</div>
-                </div>
-            """, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Classic soft colors
+        colors = ["#D6EAF8", "#D5F5E3", "#FCF3CF", "#FADBD8", "#E8DAEF", "#F5EEF8"]
+        num_cols = 3  # Number of cards per row
+
+        for i in range(0, len(users), num_cols):
+            cols = st.columns(num_cols, gap="medium")
+            for j, u in enumerate(users[i:i+num_cols]):
+                color = colors[(i+j) % len(colors)]
+                with cols[j]:
+                    st.markdown(f"""
+                        <div class="user-card" style="background: {color};">
+                            <div class="user-name">👤 {u['name']}</div>
+                            <div class="user-info"><b>Email:</b> {u['email']}</div>
+                        </div>
+                    """, unsafe_allow_html=True)
     else:
         st.info("No users found.")
+
+
 
 
