@@ -50,8 +50,27 @@ body {font-family: 'Poppins', sans-serif; background-color:#f9fafc;}
               background: linear-gradient(90deg, #6a11cb, #2575fc); margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);}
 .section-header {font-size:1.5rem; font-weight:600; color:#283E51; margin-bottom:0.5rem;}
 .divider {height:3px; width:80px; background: linear-gradient(90deg, #4B79A1, #283E51); border-radius:2px; margin-bottom:1.5rem;}
-.capsule-card, .user-card {background:#fff; border-radius:14px; padding:1.5rem; margin-bottom:1rem; box-shadow:0 4px 12px rgba(0,0,0,0.1);
-                            transition: all 0.3s ease;}
+
+.menu-card {
+    border-radius: 14px;
+    padding: 18px;
+    margin: 10px 0;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.menu-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+}
+
+.capsule-card, .user-card {
+    background:#fff; border-radius:14px; padding:1.5rem; margin-bottom:1rem; box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
 .capsule-card:hover, .user-card:hover {transform:translateY(-4px); box-shadow:0 8px 18px rgba(0,0,0,0.15);}
 .capsule-title, .user-name {font-weight:600; font-size:1.2rem; color:#2C3E50;}
 .capsule-message, .user-info {color:#555; font-size:0.95rem; margin-top:4px;}
@@ -67,47 +86,32 @@ body {font-family: 'Poppins', sans-serif; background-color:#f9fafc;}
 st.markdown('<div class="main-header">⏳ ChronoCapsule — Timed Messages</div>', unsafe_allow_html=True)
 
 # -------------------
-# SIDEBAR MENU WITH ATTRACTIVE CARDS
+# MENU CARDS IN SIDEBAR
 # -------------------
 if "active_menu" not in st.session_state:
     st.session_state.active_menu = "Create Capsule"
 
 menu_options = [
-    {"name":"Create Capsule", "color":"#85C1E9", "icon":"📝"},
-    {"name":"View Capsules", "color":"#82E0AA", "icon":"📦"},
-    {"name":"Manage Users", "color":"#F7DC6F", "icon":"👥"}
+    {"name":"Create Capsule", "color":"#3498DB", "icon":"📝"},
+    {"name":"View Capsules", "color":"#2ECC71", "icon":"📦"},
+    {"name":"Manage Users", "color":"#F39C12", "icon":"👥"}
 ]
 
 with st.sidebar:
     st.markdown("<h4 style='text-align:center;'>📋 MENU</h4>", unsafe_allow_html=True)
     for option in menu_options:
-        clicked = st.button(f"{option['icon']} {option['name']}", key=option['name'])
-        if clicked:
+        card_clicked = st.button(f"{option['icon']} {option['name']}", key=option['name'])
+        if card_clicked:
             st.session_state.active_menu = option['name']
-        # Apply card style
+        # render colorful card
         st.markdown(f"""
-        <style>
-        div.stButton>button:contains("{option['icon']} {option['name']}") {{
-            background: {option['color']};
-            color: #000;
-            font-weight:600;
-            font-size:1.05rem;
-            padding:15px 0;
-            margin-bottom:12px;
-            border-radius:14px;
-            width:100%;
-        }}
-        div.stButton>button:contains("{option['icon']} {option['name']}"):hover {{
-            box-shadow:0 6px 14px rgba(0,0,0,0.25);
-            transform: translateY(-3px);
-        }}
-        </style>
+            <div class="menu-card" style="background:{option['color']}">{option['icon']} {option['name']}</div>
         """, unsafe_allow_html=True)
 
 menu = st.session_state.active_menu
 
 # -------------------
-# CREATE CAPSULE PAGE
+# CREATE CAPSULE
 # -------------------
 if menu == "Create Capsule":
     st.markdown('<div class="section-header">📝 Create Capsule</div><div class="divider"></div>', unsafe_allow_html=True)
@@ -151,7 +155,7 @@ if menu == "Create Capsule":
                 st.error(f"Error: {e}")
 
 # -------------------
-# VIEW CAPSULES PAGE
+# VIEW CAPSULES
 # -------------------
 elif menu == "View Capsules":
     st.markdown('<div class="section-header">📦 View Capsules</div><div class="divider"></div>', unsafe_allow_html=True)
@@ -176,7 +180,8 @@ elif menu == "View Capsules":
             st.info("No capsules match filter.")
         else:
             for _, row in df.iterrows():
-                scheduled_str = row["scheduled_ist"].strftime('%Y-%m-%d %H:%M') if row["scheduled_ist"] else "N/A"
+                # SAFELY handle NaT or None
+                scheduled_str = row["scheduled_ist"].strftime('%Y-%m-%d %H:%M') if pd.notnull(row["scheduled_ist"]) else "N/A"
                 st.markdown(f"""
                     <div class="capsule-card">
                         <div class="capsule-title">🎯 {row['title']}</div>
@@ -192,7 +197,7 @@ elif menu == "View Capsules":
         st.info("No capsules found.")
 
 # -------------------
-# MANAGE USERS PAGE
+# MANAGE USERS
 # -------------------
 elif menu == "Manage Users":
     st.markdown('<div class="section-header">👥 Manage Users</div><div class="divider"></div>', unsafe_allow_html=True)
