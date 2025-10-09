@@ -31,7 +31,6 @@ def send_email(recipient, subject, message):
         msg["Subject"] = subject
         msg["From"] = sender_email
         msg["To"] = recipient
-
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(sender_email, sender_password)
             server.send_message(msg)
@@ -41,7 +40,7 @@ def send_email(recipient, subject, message):
         return False
 
 # -------------------
-# CSS — Modern Look
+# GLOBAL CSS
 # -------------------
 st.markdown("""
 <style>
@@ -65,7 +64,7 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
 .status-pending {color:#E67E22; font-weight:600;}
 .status-delivered {color:#27AE60; font-weight:600;}
 
-.stButton>button {border-radius:12px; font-weight:600; padding:12px; width:100%; margin-bottom:10px; border:none; color:white; transition: all 0.3s ease;}
+.stButton>button {border-radius:12px; font-weight:600; padding:12px; width:100%; margin-bottom:10px; border:none; transition: all 0.3s ease;}
 .stButton>button:hover {transform:translateY(-2px); box-shadow:0 6px 12px rgba(0,0,0,0.15);}
 .stTextInput>div>div>input, textarea, select {border-radius:10px !important; border:1px solid #dce1e7 !important; box-shadow:0px 2px 6px rgba(0,0,0,0.05);}
 </style>
@@ -77,29 +76,33 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
 st.markdown('<div class="main-header">⏳ ChronoCapsule — Timed Messages</div>', unsafe_allow_html=True)
 
 # -------------------
-# SIDEBAR MENU CARDS
+# SIDEBAR CARDS (Light classic colors)
 # -------------------
 if "active_menu" not in st.session_state:
     st.session_state.active_menu = "Create Capsule"
 
-menu_options = ["Create Capsule", "View Capsules", "Manage Users"]
-menu_colors = {"Create Capsule":"#3498db", "View Capsules":"#2ecc71", "Manage Users":"#9b59b6"}
+menu_options = [
+    {"name":"Create Capsule", "color":"#85C1E9"},
+    {"name":"View Capsules", "color":"#82E0AA"},
+    {"name":"Manage Users", "color":"#D7BDE2"}
+]
 
 with st.sidebar:
+    st.markdown("<div style='padding:10px 0; font-weight:600; font-size:16px;'>📋 MENU</div>", unsafe_allow_html=True)
     for option in menu_options:
-        if st.button(option, key=option):
-            st.session_state.active_menu = option
-        # Card style
+        if st.button(option["name"], key=option["name"]):
+            st.session_state.active_menu = option["name"]
+        # Add card background color
         st.markdown(f"""
             <style>
-            div.stButton>button:contains("{option}") {{
-                background:{menu_colors[option]};
+            div.stButton>button:contains("{option['name']}") {{
+                background:{option['color']}; color:#000; font-weight:600;
             }}
             </style>
         """, unsafe_allow_html=True)
 
 # -------------------
-# RENDER PAGES
+# PAGE RENDER
 # -------------------
 menu = st.session_state.active_menu
 
@@ -155,7 +158,7 @@ elif menu=="View Capsules":
     if data:
         df = pd.DataFrame(data)
         df["scheduled_time"] = pd.to_datetime(df["scheduled_time"], errors="coerce", utc=True)
-        df["scheduled_ist"] = df["scheduled_time"].apply(lambda x: x + timedelta(hours=5, minutes=30) if pd.notnull(x) else None)
+        df["scheduled_ist"] = df["scheduled_time"].apply(lambda x: (x + timedelta(hours=5, minutes=30)) if pd.notnull(x) else None)
 
         if filter_status=="Pending": df = df[df["is_delivered"]==False]
         elif filter_status=="Delivered": df = df[df["is_delivered"]==True]
@@ -164,13 +167,14 @@ elif menu=="View Capsules":
             st.info("No capsules match filter.")
         else:
             for _, row in df.iterrows():
+                scheduled_str = row["scheduled_ist"].strftime('%Y-%m-%d %H:%M') if row["scheduled_ist"] is not None else "N/A"
                 st.markdown(f"""
                     <div class="capsule-card">
                         <div class="capsule-title">🎯 {row.get('title','')}</div>
                         <div class="capsule-message">{row.get('message','')}</div>
                         <div class="capsule-message">
                             <b>Recipient:</b> {row.get('recipient_email','')}<br>
-                            <b>Scheduled (IST):</b> {row['scheduled_ist'].strftime('%Y-%m-%d %H:%M') if row['scheduled_ist'] else 'N/A'}<br>
+                            <b>Scheduled (IST):</b> {scheduled_str}<br>
                             <b>Status:</b> {"<span class='status-delivered'>✅ Delivered</span>" if row.get('is_delivered') else "<span class='status-pending'>⌛ Pending</span>"}
                         </div>
                     </div>
