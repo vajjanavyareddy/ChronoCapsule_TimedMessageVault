@@ -42,29 +42,25 @@ if "menu" not in st.session_state:
 # ------------------- GLOBAL CSS -------------------
 st.markdown("""
 <style>
-/* Sidebar radio buttons as cards */
-.stRadio>div>label {
-    display:block; padding:20px; margin-bottom:15px; border-radius:16px;
-    font-size:1.2rem; font-weight:600; text-align:center; cursor:pointer;
-    color:white; transition: all 0.3s ease;
+/* Capsule/User Cards */
+.capsule-card, .user-card {
+    border-radius:16px; padding:1.25rem; margin-bottom:1rem;
+    box-shadow:0 4px 10px rgba(0,0,0,0.08); transition: all 0.3s ease;
 }
-
-/* Individual radio button gradients (classic soft) */
-.stRadio>div>label:nth-child(1) { background: linear-gradient(135deg, #A3C4BC, #C5E1A5); }  /* Create Capsule */
-.stRadio>div>label:nth-child(2) { background: linear-gradient(135deg, #9FA8DA, #C5CAE9); }  /* View Capsules */
-.stRadio>div>label:nth-child(3) { background: linear-gradient(135deg, #FFCCBC, #FFAB91); }  /* Manage Users */
-
-/* Hover effect to lift card */
-.stRadio>div>label:hover {
-    transform: translateY(-3px); box-shadow:0 6px 18px rgba(0,0,0,0.2);
+.capsule-card:hover, .user-card:hover {
+    transform:translateY(-3px); box-shadow:0 8px 15px rgba(0,0,0,0.12);
 }
-
-/* Selected radio button */
-.stRadio>div>input:checked + label {
-    box-shadow:0 8px 25px rgba(0,0,0,0.35); transform: translateY(-2px);
+.capsule-title, .user-name {
+    font-weight:600; font-size:1.1rem; color:#2C3E50;
 }
+.capsule-message, .user-info {
+    color:#555; font-size:0.95rem; margin-top:4px;
+}
+.status-pending {color:#E67E22; font-weight:600;}
+.status-delivered {color:#27AE60; font-weight:600;}
 </style>
 """, unsafe_allow_html=True)
+
 
 # ------------------- HEADER -------------------
 st.markdown('<div class="main-header">⏳ ChronoCapsule — Timed Messages</div>', unsafe_allow_html=True)
@@ -200,6 +196,7 @@ elif menu == "Manage Users":
                     """, unsafe_allow_html=True)
     else:
         st.info("No users found.")
+
 
 
 
