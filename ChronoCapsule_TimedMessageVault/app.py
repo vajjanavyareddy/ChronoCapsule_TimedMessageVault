@@ -2,13 +2,10 @@ import streamlit as st
 import pandas as pd
 from supabase import create_client
 from datetime import datetime, timedelta
-import warnings
-
-warnings.filterwarnings("ignore")
 
 st.set_page_config(page_title="ChronoCapsule", page_icon="⏳", layout="wide")
 
-# Supabase
+# Supabase client
 supabase_url = st.secrets["supabase"]["url"]
 supabase_key = st.secrets["supabase"]["key"]
 supabase = create_client(supabase_url, supabase_key)
@@ -22,12 +19,18 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 body {font-family: 'Poppins', sans-serif; background-color:#f0f4f8;}
-.main-header {text-align:center; font-size:2.2rem; font-weight:700; color:white; padding:1rem; border-radius:14px; background: linear-gradient(90deg, #6a11cb, #2575fc); margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);}
-.menu-button {width:100%; padding:1rem; margin-bottom:1rem; border:none; border-radius:16px; font-weight:600; font-size:1.2rem; color:white; cursor:pointer; transition:all 0.3s ease;}
-.menu-create {background: linear-gradient(90deg, #ff7e5f, #feb47b);}
-.menu-view {background: linear-gradient(90deg, #43cea2, #185a9d);}
-.menu-users {background: linear-gradient(90deg, #ff6a00, #ee0979);}
-.menu-button:hover {transform:translateY(-4px); box-shadow:0 8px 20px rgba(0,0,0,0.25);}
+.main-header {text-align:center; font-size:2.2rem; font-weight:700; color:white; padding:1rem; border-radius:14px;
+background: linear-gradient(90deg, #6a11cb, #2575fc); margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);}
+
+.sidebar-card {padding:1rem; margin-bottom:1rem; border-radius:16px; color:white; font-weight:600; font-size:1.2rem;
+text-align:center; cursor:pointer; transition:all 0.3s ease;}
+.sidebar-card:hover {transform:translateY(-4px); box-shadow:0 8px 20px rgba(0,0,0,0.25);}
+
+/* Classic colors */
+.card-create {background: linear-gradient(90deg, #ff7e5f, #feb47b);}
+.card-view {background: linear-gradient(90deg, #43cea2, #185a9d);}
+.card-users {background: linear-gradient(90deg, #ff6a00, #ee0979);}
+
 .capsule-card, .user-card {background:#fff; border-radius:14px; padding:1.5rem; margin-bottom:1rem; box-shadow:0 4px 12px rgba(0,0,0,0.1); transition:all 0.3s ease;}
 .capsule-card:hover, .user-card:hover {transform:translateY(-4px); box-shadow:0 8px 18px rgba(0,0,0,0.15);}
 .capsule-title, .user-name {font-weight:600; font-size:1.2rem; color:#2C3E50;}
@@ -42,14 +45,19 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f4f8;}
 # ------------------- HEADER -------------------
 st.markdown('<div class="main-header">⏳ ChronoCapsule — Timed Messages</div>', unsafe_allow_html=True)
 
-# ------------------- SIDEBAR MENU -------------------
+# ------------------- SIDEBAR CARDS -------------------
 with st.sidebar:
     if st.button("📝 Create Capsule", key="menu_create"):
         st.session_state.menu = "Create Capsule"
+    st.markdown('<div class="sidebar-card card-create">📝 Create Capsule</div>', unsafe_allow_html=True)
+
     if st.button("📦 View Capsules", key="menu_view"):
         st.session_state.menu = "View Capsules"
+    st.markdown('<div class="sidebar-card card-view">📦 View Capsules</div>', unsafe_allow_html=True)
+
     if st.button("👥 Manage Users", key="menu_users"):
         st.session_state.menu = "Manage Users"
+    st.markdown('<div class="sidebar-card card-users">👥 Manage Users</div>', unsafe_allow_html=True)
 
 menu = st.session_state.menu
 
