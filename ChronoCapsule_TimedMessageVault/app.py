@@ -8,21 +8,15 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-# -------------------
-# PAGE CONFIG
-# -------------------
+# ------------------- PAGE CONFIG -------------------
 st.set_page_config(page_title="ChronoCapsule", page_icon="⏳", layout="wide")
 
-# -------------------
-# SUPABASE CLIENT
-# -------------------
+# ------------------- SUPABASE CLIENT -------------------
 supabase_url = st.secrets["supabase"]["url"]
 supabase_key = st.secrets["supabase"]["key"]
 supabase = create_client(supabase_url, supabase_key)
 
-# -------------------
-# EMAIL FUNCTION
-# -------------------
+# ------------------- EMAIL FUNCTION -------------------
 def send_email(recipient, subject, message):
     try:
         sender_email = st.secrets["email"]["address"]
@@ -41,21 +35,18 @@ def send_email(recipient, subject, message):
         st.error(f"❌ Failed to send email: {e}")
         return False
 
-# -------------------
-# SESSION STATE
-# -------------------
+# ------------------- SESSION STATE -------------------
 if "menu" not in st.session_state:
     st.session_state.menu = "Create Capsule"
 
-# -------------------
-# GLOBAL CSS
-# -------------------
+# ------------------- GLOBAL CSS -------------------
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 
 body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
 
+/* Header */
 .main-header {
     text-align:center; font-size:2.5rem; font-weight:700; 
     color:white; padding:1.5rem; border-radius:14px; 
@@ -65,54 +56,59 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
 
 /* Sidebar radio buttons as cards */
 .stRadio>div>label {
-    display:block; padding:20px; margin-bottom:15px; border-radius:16px;
-    font-size:1.2rem; font-weight:600; text-align:center; cursor:pointer;
+    display:block; padding:22px; margin-bottom:15px; border-radius:18px;
+    font-size:1.25rem; font-weight:600; text-align:center; cursor:pointer;
     color:white; transition: all 0.3s ease;
 }
-.stRadio>div>label:nth-child(1) { background: linear-gradient(135deg, #a7c957, #d3e27f); }  /* Create Capsule */
-.stRadio>div>label:nth-child(2) { background: linear-gradient(135deg, #3399ff, #99ccff); }  /* View Capsules */
-.stRadio>div>label:nth-child(3) { background: linear-gradient(135deg, #ff7f50, #ffb690); }  /* Manage Users */
-.stRadio>div>label:hover { transform: translateY(-3px); box-shadow:0 6px 18px rgba(0,0,0,0.2); }
 
-/* Horizontal capsule container */
-.capsule-container {
-    display: flex;
-    gap: 20px;
-    overflow-x: auto;
-    padding-bottom: 15px;
+/* Individual radio button gradients */
+.stRadio>div>label:nth-child(1) { background: linear-gradient(135deg, #a7c957, #d3e27f); }
+.stRadio>div>label:nth-child(2) { background: linear-gradient(135deg, #3399ff, #99ccff); }
+.stRadio>div>label:nth-child(3) { background: linear-gradient(135deg, #ff7f50, #ffb690); }
+
+.stRadio>div>label:hover {
+    transform: translateY(-4px); box-shadow:0 8px 20px rgba(0,0,0,0.25);
+}
+.stRadio>div>input:checked + label {
+    box-shadow:0 8px 25px rgba(0,0,0,0.35); transform: translateY(-2px);
 }
 
 /* Capsule/User Cards */
 .capsule-card, .user-card {
-    flex: 0 0 300px;
-    border-radius:16px; padding:1.5rem;
-    box-shadow:0 4px 12px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
+    flex: 0 0 auto;
+    width: 300px;
+    border-radius:16px; padding:1.5rem; margin-bottom:1rem;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;
     display: inline-block;
 }
-.capsule-card:hover, .user-card:hover { transform:translateY(-4px); box-shadow:0 8px 18px rgba(0,0,0,0.15); }
-.capsule-title, .user-name { font-weight:600; font-size:1.2rem; color:#2C3E50; }
-.capsule-message, .user-info { color:#555; font-size:0.95rem; margin-top:4px; }
-.status-pending { color:#E67E22; font-weight:600; }
-.status-delivered { color:#27AE60; font-weight:600; }
+.capsule-card:hover, .user-card:hover {
+    transform:translateY(-4px);
+    box-shadow:0 8px 18px rgba(0,0,0,0.15);
+}
+.capsule-title, .user-name {font-weight:600; font-size:1.2rem; color:#2C3E50;}
+.capsule-message, .user-info {color:#555; font-size:0.95rem; margin-top:4px;}
+.status-pending {color:#E67E22; font-weight:600;}
+.status-delivered {color:#27AE60; font-weight:600;}
+
+/* Horizontal scrollable container */
+.capsule-container, .user-container {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
 </style>
 """, unsafe_allow_html=True)
 
-# -------------------
-# HEADER
-# -------------------
+# ------------------- HEADER -------------------
 st.markdown('<div class="main-header">⏳ ChronoCapsule — Timed Messages</div>', unsafe_allow_html=True)
 
-# -------------------
-# SIDEBAR MENU
-# -------------------
+# ------------------- SIDEBAR MENU -------------------
 menu = st.sidebar.radio("📋 Menu", ["Create Capsule", "View Capsules", "Manage Users"])
 st.session_state.menu = menu
 
-# -------------------
-# PAGE: CREATE CAPSULE
-# -------------------
-if st.session_state.menu == "Create Capsule":
+# ------------------- CREATE CAPSULE -------------------
+if menu == "Create Capsule":
     st.subheader("📝 Create Capsule")
     try:
         users = supabase.table("users").select("*").execute().data
@@ -153,9 +149,7 @@ if st.session_state.menu == "Create Capsule":
             except Exception as e:
                 st.error(f"Error: {e}")
 
-# -------------------
-# PAGE: VIEW CAPSULES
-# -------------------
+# ------------------- VIEW CAPSULES -------------------
 elif menu == "View Capsules":
     st.subheader("📦 View Capsules")
     filter_status = st.radio("Filter By", ["All", "Pending", "Delivered"], horizontal=True)
@@ -169,10 +163,10 @@ elif menu == "View Capsules":
         df["scheduled_time"] = pd.to_datetime(df["scheduled_time"], utc=True, errors="coerce")
         df["scheduled_ist"] = df["scheduled_time"].apply(lambda x: x + timedelta(hours=5, minutes=30) if pd.notnull(x) else None)
 
-        if filter_status=="Pending":
-            df = df[df["is_delivered"]==False]
-        elif filter_status=="Delivered":
-            df = df[df["is_delivered"]==True]
+        if filter_status == "Pending":
+            df = df[df["is_delivered"] == False]
+        elif filter_status == "Delivered":
+            df = df[df["is_delivered"] == True]
 
         if df.empty:
             st.info("No capsules found.")
@@ -197,10 +191,8 @@ elif menu == "View Capsules":
     else:
         st.info("No capsules found.")
 
-# -------------------
-# PAGE: MANAGE USERS
-# -------------------
-elif st.session_state.menu == "Manage Users":
+# ------------------- MANAGE USERS -------------------
+elif menu == "Manage Users":
     st.subheader("👥 Manage Users")
     name = st.text_input("Name")
     email = st.text_input("Email")
@@ -221,7 +213,7 @@ elif st.session_state.menu == "Manage Users":
 
     if users:
         colors = ["#ff9a9e","#fad0c4","#fbc2eb","#a6c1ee","#84fab0","#8fd3f4"]
-        st.markdown('<div class="capsule-container">', unsafe_allow_html=True)
+        st.markdown('<div class="user-container">', unsafe_allow_html=True)
         for i, u in enumerate(users):
             color = colors[i % len(colors)]
             st.markdown(f"""
