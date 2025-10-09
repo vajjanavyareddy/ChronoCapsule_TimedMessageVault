@@ -2,8 +2,6 @@ import streamlit as st
 import pandas as pd
 from supabase import create_client
 from datetime import datetime, timedelta
-import smtplib
-from email.mime.text import MIMEText
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -11,7 +9,7 @@ warnings.filterwarnings("ignore")
 # -------------------
 # PAGE CONFIG
 # -------------------
-st.set_page_config(page_title="ChronoCapsule", page_icon="⏳", layout="wide")
+st.set_page_config(page_title="⏳ ChronoCapsule", layout="wide")
 
 # -------------------
 # SUPABASE CLIENT
@@ -19,26 +17,6 @@ st.set_page_config(page_title="ChronoCapsule", page_icon="⏳", layout="wide")
 supabase_url = st.secrets["supabase"]["url"]
 supabase_key = st.secrets["supabase"]["key"]
 supabase = create_client(supabase_url, supabase_key)
-
-# -------------------
-# EMAIL FUNCTION
-# -------------------
-def send_email(recipient, subject, message):
-    try:
-        sender_email = st.secrets["email"]["address"]
-        sender_password = st.secrets["email"]["password"]
-        msg = MIMEText(message, "html")
-        msg["Subject"] = subject
-        msg["From"] = sender_email
-        msg["To"] = recipient
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(sender_email, sender_password)
-            server.send_message(msg)
-        return True
-    except Exception as e:
-        st.error(f"❌ Failed to send email: {e}")
-        return False
 
 # -------------------
 # SESSION STATE
@@ -53,12 +31,11 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
-.main-header {text-align:center; font-size:2.5rem; font-weight:700; color:white; padding:1.5rem; border-radius:14px; background: linear-gradient(90deg, #6a11cb, #2575fc); margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);}
-.menu-card {padding:18px; border-radius:16px; text-align:center; font-size:1.15rem; font-weight:600; color:white; cursor:pointer; transition: all 0.3s ease; box-shadow:0 4px 12px rgba(0,0,0,0.15); margin-bottom:8px;}
-.menu-card:hover {transform:translateY(-4px); box-shadow:0 8px 18px rgba(0,0,0,0.25);}
+.main-header {text-align:center; font-size:2.5rem; font-weight:700; color:white; padding:1.5rem; border-radius:14px; 
+             background: linear-gradient(90deg, #6a11cb, #2575fc); margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);}
 .capsule-card, .user-card {border-radius:16px; padding:1.5rem; margin-bottom:1rem; box-shadow:0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;}
 .capsule-card:hover, .user-card:hover {transform:translateY(-4px); box-shadow:0 8px 18px rgba(0,0,0,0.15);}
-.capsule-title, .user-name {font-weight:600; font-size:1.2rem; color:#2C3E50;}
+.capsule-title, .user-name {font-weight:600; font-size:1.25rem; color:#2C3E50;}
 .capsule-message, .user-info {color:#555; font-size:0.95rem; margin-top:4px;}
 .status-pending {color:#E67E22; font-weight:600;}
 .status-delivered {color:#27AE60; font-weight:600;}
@@ -71,48 +48,16 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
 st.markdown('<div class="main-header">⏳ ChronoCapsule — Timed Messages</div>', unsafe_allow_html=True)
 
 # -------------------
-# SIDEBAR MENU
+# SIDEBAR MENU (Radio Buttons)
 # -------------------
-menu_options = [
-    {"name": "Create Capsule", "color": "#ff7e5f"},
-    {"name": "View Capsules", "color": "#6a11cb"},
-    {"name": "Manage Users", "color": "#43cea2"}
-]
-
-st.sidebar.markdown("<h3 style='text-align:center;'>📋 Menu</h3>", unsafe_allow_html=True)
-
-selected_page = st.sidebar.radio(
-    "",
-    options=[opt["name"] for opt in menu_options],
-    index=[opt["name"] for opt in menu_options].index(st.session_state.page),
-    key="sidebar_nav"
-)
-
-st.session_state.page = selected_page
-
-# Display colored menu cards
-for opt in menu_options:
-    color = opt["color"] if opt["name"] == st.session_state.page else "#ccc"
-    st.sidebar.markdown(f"""
-        <div style="
-            background: linear-gradient(135deg,{color},{color}aa);
-            padding:15px;
-            border-radius:12px;
-            text-align:center;
-            font-weight:600;
-            margin-bottom:8px;
-            color:white;
-        ">
-            {opt['name']}
-        </div>
-    """, unsafe_allow_html=True)
+menu_options = ["Create Capsule", "View Capsules", "Manage Users"]
+st.session_state.page = st.sidebar.radio("📋 Menu", menu_options, index=menu_options.index(st.session_state.page))
 
 # -------------------
 # PAGE: CREATE CAPSULE
 # -------------------
 if st.session_state.page == "Create Capsule":
     st.subheader("📝 Create Capsule")
-
     try:
         users = supabase.table("users").select("*").execute().data
     except:
