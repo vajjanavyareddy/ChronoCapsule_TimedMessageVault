@@ -126,6 +126,7 @@ if menu == "Create Capsule":
                 st.error(f"Error: {e}")
 
 # ------------------- PAGE: VIEW CAPSULES (Horizontal) -------------------
+# ------------------- PAGE: VIEW CAPSULES (Horizontal Scroll) -------------------
 elif menu == "View Capsules":
     st.subheader("📦 View Capsules")
     filter_status = st.radio("Filter By", ["All", "Pending", "Delivered"], horizontal=True)
@@ -149,26 +150,27 @@ elif menu == "View Capsules":
             st.info("No capsules found.")
         else:
             colors = ["#f6d365","#fda085","#a1c4fd","#c2e9fb","#84fab0","#8fd3f4"]
-            num_cols = 3
-            for i in range(0, len(df), num_cols):
-                cols = st.columns(num_cols)
-                for j, (_, row) in enumerate(df.iloc[i:i+num_cols].iterrows()):
-                    scheduled_str = row["scheduled_ist"].strftime('%Y-%m-%d %H:%M') if pd.notnull(row["scheduled_ist"]) else "N/A"
-                    color = colors[(i+j) % len(colors)]
-                    with cols[j]:
-                        st.markdown(f"""
-                            <div class="capsule-card" style="background: linear-gradient(120deg,{color},{color}90);">
-                                <div class="capsule-title">🎯 {row['title']}</div>
-                                <div class="capsule-message">{row['message']}</div>
-                                <div class="capsule-message">
-                                    <b>Recipient:</b> {row['recipient_email']}<br>
-                                    <b>Scheduled (IST):</b> {scheduled_str}<br>
-                                    <b>Status:</b> {"<span class='status-delivered'>✅ Delivered</span>" if row['is_delivered'] else "<span class='status-pending'>⌛ Pending</span>"}
-                                </div>
-                            </div>
-                        """, unsafe_allow_html=True)
+
+            # Wrap cards inside a horizontally scrollable container
+            st.markdown('<div style="display:flex; overflow-x:auto; gap:15px; padding-bottom:10px;">', unsafe_allow_html=True)
+            for i, (_, row) in enumerate(df.iterrows()):
+                scheduled_str = row["scheduled_ist"].strftime('%Y-%m-%d %H:%M') if pd.notnull(row["scheduled_ist"]) else "N/A"
+                color = colors[i % len(colors)]
+                st.markdown(f"""
+                    <div class="capsule-card" style="min-width:300px; flex:0 0 auto; background: linear-gradient(120deg,{color},{color}90);">
+                        <div class="capsule-title">🎯 {row['title']}</div>
+                        <div class="capsule-message">{row['message']}</div>
+                        <div class="capsule-message">
+                            <b>Recipient:</b> {row['recipient_email']}<br>
+                            <b>Scheduled (IST):</b> {scheduled_str}<br>
+                            <b>Status:</b> {"<span class='status-delivered'>✅ Delivered</span>" if row['is_delivered'] else "<span class='status-pending'>⌛ Pending</span>"}
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
     else:
         st.info("No capsules found.")
+
 
 # ------------------- PAGE: MANAGE USERS -------------------
 elif menu == "Manage Users":
@@ -202,3 +204,4 @@ elif menu == "Manage Users":
             """, unsafe_allow_html=True)
     else:
         st.info("No users found.")
+
