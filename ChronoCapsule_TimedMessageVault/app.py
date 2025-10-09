@@ -64,9 +64,13 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
 .status-pending {color:#E67E22; font-weight:600;}
 .status-delivered {color:#27AE60; font-weight:600;}
 
-.stButton>button {border-radius:12px; font-weight:600; padding:12px; width:100%; margin-bottom:10px; border:none; transition: all 0.3s ease;}
-.stButton>button:hover {transform:translateY(-2px); box-shadow:0 6px 12px rgba(0,0,0,0.15);}
 .stTextInput>div>div>input, textarea, select {border-radius:10px !important; border:1px solid #dce1e7 !important; box-shadow:0px 2px 6px rgba(0,0,0,0.05);}
+
+/* Sidebar card styles */
+.sidebar-card {
+    padding:15px; margin-bottom:15px; border-radius:12px; text-align:center; font-weight:600; cursor:pointer; transition: all 0.3s ease; font-size:1.1rem;
+}
+.sidebar-card:hover {transform:translateY(-3px); box-shadow:0 6px 14px rgba(0,0,0,0.2);}
 </style>
 """, unsafe_allow_html=True)
 
@@ -76,7 +80,7 @@ body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
 st.markdown('<div class="main-header">⏳ ChronoCapsule — Timed Messages</div>', unsafe_allow_html=True)
 
 # -------------------
-# SIDEBAR CARDS (Light classic colors)
+# SIDEBAR MENU CARDS
 # -------------------
 if "active_menu" not in st.session_state:
     st.session_state.active_menu = "Create Capsule"
@@ -84,19 +88,20 @@ if "active_menu" not in st.session_state:
 menu_options = [
     {"name":"Create Capsule", "color":"#85C1E9"},
     {"name":"View Capsules", "color":"#82E0AA"},
-    {"name":"Manage Users", "color":"#D7BDE2"}
+    {"name":"Manage Users", "color":"#F7DC6F"}
 ]
 
 with st.sidebar:
-    st.markdown("<div style='padding:10px 0; font-weight:600; font-size:16px;'>📋 MENU</div>", unsafe_allow_html=True)
+    st.markdown("<h4 style='text-align:center;'>📋 MENU</h4>", unsafe_allow_html=True)
     for option in menu_options:
-        if st.button(option["name"], key=option["name"]):
+        clicked = st.button(option["name"], key=option["name"])
+        if clicked:
             st.session_state.active_menu = option["name"]
-        # Add card background color
+        # Custom background for the button card
         st.markdown(f"""
             <style>
             div.stButton>button:contains("{option['name']}") {{
-                background:{option['color']}; color:#000; font-weight:600;
+                background:{option['color']}; color:#000; font-weight:600; padding:12px 0; font-size:1.05rem;
             }}
             </style>
         """, unsafe_allow_html=True)
@@ -157,8 +162,8 @@ elif menu=="View Capsules":
 
     if data:
         df = pd.DataFrame(data)
-        df["scheduled_time"] = pd.to_datetime(df["scheduled_time"], errors="coerce", utc=True)
-        df["scheduled_ist"] = df["scheduled_time"].apply(lambda x: (x + timedelta(hours=5, minutes=30)) if pd.notnull(x) else None)
+        df["scheduled_time"] = pd.to_datetime(df.get("scheduled_time"), errors="coerce", utc=True)
+        df["scheduled_ist"] = df["scheduled_time"].apply(lambda x: x + timedelta(hours=5, minutes=30) if pd.notnull(x) else None)
 
         if filter_status=="Pending": df = df[df["is_delivered"]==False]
         elif filter_status=="Delivered": df = df[df["is_delivered"]==True]
@@ -167,7 +172,7 @@ elif menu=="View Capsules":
             st.info("No capsules match filter.")
         else:
             for _, row in df.iterrows():
-                scheduled_str = row["scheduled_ist"].strftime('%Y-%m-%d %H:%M') if row["scheduled_ist"] is not None else "N/A"
+                scheduled_str = row["scheduled_ist"].strftime('%Y-%m-%d %H:%M') if pd.notnull(row["scheduled_ist"]) else "N/A"
                 st.markdown(f"""
                     <div class="capsule-card">
                         <div class="capsule-title">🎯 {row.get('title','')}</div>
@@ -187,11 +192,10 @@ elif menu=="Manage Users":
     st.markdown('<div class="section-header">👥 Manage Users</div><div class="divider"></div>', unsafe_allow_html=True)
     name = st.text_input("Name")
     email = st.text_input("Email")
-
     if st.button("Add User ➕"):
         if name and email:
             try:
-                supabase.table("users").insert({"name": name,"email": email}).execute()
+                supabase.table("users").insert({"name":name,"email":email}).execute()
                 st.success("✅ User added!")
             except Exception as e:
                 st.error(f"Error: {e}")
@@ -202,8 +206,7 @@ elif menu=="Manage Users":
     except: users = []
 
     if users:
-        df_users = pd.DataFrame(users)
-        for _, row in df_users.iterrows():
+        for row in users:
             st.markdown(f"""
                 <div class="user-card">
                     <div class="user-name">👤 {row.get('name','')}</div>
