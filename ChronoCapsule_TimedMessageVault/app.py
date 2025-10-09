@@ -42,24 +42,54 @@ def send_email(recipient, subject, message):
         return False
 
 # -------------------
-# GLOBAL CSS — Modern Elegant Look
+# GLOBAL CSS
 # -------------------
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
-body {font-family: 'Poppins', sans-serif; background-color:#f9fafc;}
+body {font-family: 'Poppins', sans-serif; background-color:#f5f7fa;}
 
-.main-header {
-    text-align:center; font-size:2rem; font-weight:700; color:white; padding:1rem; border-radius:14px;
-    background: linear-gradient(90deg, #6a11cb, #2575fc); margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);
+/* Sidebar card style */
+.sidebar-card {
+    background:#fff;
+    border-radius:12px;
+    padding:15px;
+    margin:10px 0;
+    box-shadow:0 3px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    text-align:center;
+    cursor:pointer;
+    font-weight:600;
+    color:#283E51;
+}
+.sidebar-card:hover {
+    transform: translateY(-2px);
+    box-shadow:0 6px 16px rgba(0,0,0,0.15);
+    background: linear-gradient(90deg, #6a11cb, #2575fc);
+    color:white;
 }
 
+/* Header */
+.main-header {
+    text-align:center;
+    font-size:2rem;
+    font-weight:700;
+    color:white;
+    padding:1rem;
+    border-radius:14px;
+    background: linear-gradient(90deg, #6a11cb, #2575fc);
+    margin-bottom:2rem;
+    box-shadow:0 4px 12px rgba(0,0,0,0.25);
+}
+
+/* Section */
 .section-header {font-size:1.5rem; font-weight:600; color:#283E51; margin-bottom:0.5rem;}
 .divider {height:3px; width:80px; background: linear-gradient(90deg, #4B79A1, #283E51); border-radius:2px; margin-bottom:1.5rem;}
 
+/* Capsule cards */
 .capsule-card, .user-card {
-    background:#fff; border-radius:14px; padding:1.5rem; margin-bottom:1rem; box-shadow:0 4px 12px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
+    background:#fff; border-radius:14px; padding:1.5rem; margin-bottom:1rem; 
+    box-shadow:0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;
 }
 .capsule-card:hover, .user-card:hover {transform:translateY(-4px); box-shadow:0 8px 18px rgba(0,0,0,0.15);}
 .capsule-title, .user-name {font-weight:600; font-size:1.2rem; color:#2C3E50;}
@@ -67,6 +97,7 @@ body {font-family: 'Poppins', sans-serif; background-color:#f9fafc;}
 .status-pending {color:#E67E22; font-weight:600;}
 .status-delivered {color:#27AE60; font-weight:600;}
 
+/* Buttons */
 .stButton>button {background: linear-gradient(90deg, #4B79A1, #283E51); color:white; font-weight:600; border-radius:12px; padding:10px 24px; border:none; transition: all 0.3s ease;}
 .stButton>button:hover {background: linear-gradient(90deg, #283E51, #4B79A1); transform:translateY(-2px);}
 .stTextInput>div>div>input, textarea, select {border-radius:10px !important; border:1px solid #dce1e7 !important; box-shadow:0px 2px 6px rgba(0,0,0,0.05);}
@@ -79,9 +110,17 @@ body {font-family: 'Poppins', sans-serif; background-color:#f9fafc;}
 st.markdown('<div class="main-header">⏳ ChronoCapsule — Timed Messages</div>', unsafe_allow_html=True)
 
 # -------------------
-# MENU
+# SIDEBAR MENU AS CARDS
 # -------------------
-menu = st.sidebar.radio("📋 Menu", ["Create Capsule", "View Capsules", "Manage Users"])
+st.sidebar.markdown('<div class="section-header">📋 Menu</div><div class="divider"></div>', unsafe_allow_html=True)
+menu_options = ["Create Capsule", "View Capsules", "Manage Users"]
+selected = st.sidebar.radio("", menu_options, index=0, key="menu_radio")
+for opt in menu_options:
+    if st.sidebar.button(opt, key=f"card_{opt}"):
+        selected = opt
+        st.session_state["menu_radio"] = menu_options.index(opt)
+
+menu = selected
 
 # -------------------
 # CREATE CAPSULE
@@ -89,7 +128,6 @@ menu = st.sidebar.radio("📋 Menu", ["Create Capsule", "View Capsules", "Manage
 if menu == "Create Capsule":
     st.markdown('<div class="section-header">📝 Create Capsule</div><div class="divider"></div>', unsafe_allow_html=True)
 
-    # Users fetch
     try:
         users = supabase.table("users").select("*").execute().data
     except:
@@ -108,7 +146,6 @@ if menu == "Create Capsule":
     title = st.text_input("Capsule Title")
     message = st.text_area("Capsule Message (HTML supported)")
 
-    # Schedule
     selected_date = st.date_input("Select Date", datetime.now().date())
     selected_time = st.time_input("Select Time", datetime.now().time())
     local_dt = datetime.combine(selected_date, selected_time)
@@ -158,13 +195,15 @@ elif menu == "View Capsules":
             st.info("No capsules match filter.")
         else:
             for _, row in df.iterrows():
+                ist_time = row['scheduled_ist']
+                ist_str = ist_time.strftime('%Y-%m-%d %H:%M') if pd.notnull(ist_time) else "N/A"
                 st.markdown(f"""
                     <div class="capsule-card">
                         <div class="capsule-title">🎯 {row['title']}</div>
                         <div class="capsule-message">{row['message']}</div>
                         <div class="capsule-message">
                             <b>Recipient:</b> {row['recipient_email']}<br>
-                            <b>Scheduled (IST):</b> {row['scheduled_ist'].strftime('%Y-%m-%d %H:%M')}<br>
+                            <b>Scheduled (IST):</b> {ist_str}<br>
                             <b>Status:</b> {"<span class='status-delivered'>✅ Delivered</span>" if row['is_delivered'] else "<span class='status-pending'>⌛ Pending</span>"}
                         </div>
                     </div>
