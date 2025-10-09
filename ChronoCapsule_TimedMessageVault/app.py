@@ -27,7 +27,6 @@ def send_email(recipient, subject, message):
     try:
         sender_email = st.secrets["email"]["address"]
         sender_password = st.secrets["email"]["password"]
-
         msg = MIMEText(message, "html")
         msg["Subject"] = subject
         msg["From"] = sender_email
@@ -55,16 +54,14 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 body {font-family: 'Poppins', sans-serif; background-color:#f0f2f6;}
 .main-header {text-align:center; font-size:2.5rem; font-weight:700; color:white; padding:1.5rem; border-radius:14px; background: linear-gradient(90deg, #6a11cb, #2575fc); margin-bottom:2rem; box-shadow:0 4px 12px rgba(0,0,0,0.25);}
-.menu-card {padding:25px; margin-bottom:15px; border-radius:20px; text-align:center; font-size:1.3rem; font-weight:700; color:white; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.25); transition: all 0.3s ease;}
-.menu-card:hover {transform:translateY(-5px); box-shadow:0 8px 20px rgba(0,0,0,0.35);}
+.menu-card {padding:18px; border-radius:16px; text-align:center; font-size:1.15rem; font-weight:600; color:white; cursor:pointer; transition: all 0.3s ease; box-shadow:0 4px 12px rgba(0,0,0,0.15); margin-bottom:8px;}
+.menu-card:hover {transform:translateY(-4px); box-shadow:0 8px 18px rgba(0,0,0,0.25);}
 .capsule-card, .user-card {border-radius:16px; padding:1.5rem; margin-bottom:1rem; box-shadow:0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;}
 .capsule-card:hover, .user-card:hover {transform:translateY(-4px); box-shadow:0 8px 18px rgba(0,0,0,0.15);}
 .capsule-title, .user-name {font-weight:600; font-size:1.2rem; color:#2C3E50;}
 .capsule-message, .user-info {color:#555; font-size:0.95rem; margin-top:4px;}
 .status-pending {color:#E67E22; font-weight:600;}
 .status-delivered {color:#27AE60; font-weight:600;}
-.section-header {font-size:1.5rem; font-weight:600; color:#283E51; margin-bottom:0.5rem;}
-.divider {height:3px; width:80px; background: linear-gradient(90deg, #4B79A1, #283E51); border-radius:2px; margin-bottom:1.5rem;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -84,27 +81,37 @@ menu_options = [
 
 st.sidebar.markdown("<h3 style='text-align:center;'>📋 Menu</h3>", unsafe_allow_html=True)
 
-for option in menu_options:
-    selected = st.session_state.page == option["name"]
-    bg_color = option["color"] if not selected else "#ffd700"  # highlight selected in gold
-    # Card clickable using session_state update
-    if st.sidebar.button(option["name"], key=option["name"], help="Click to navigate"):
-        st.session_state.page = option["name"]
-        st.experimental_rerun()
+selected_page = st.sidebar.radio(
+    "",
+    options=[opt["name"] for opt in menu_options],
+    index=[opt["name"] for opt in menu_options].index(st.session_state.page),
+    key="sidebar_nav"
+)
+
+st.session_state.page = selected_page
+
+# Display colored menu cards
+for opt in menu_options:
+    color = opt["color"] if opt["name"] == st.session_state.page else "#ccc"
     st.sidebar.markdown(f"""
-        <div class="menu-card" style="background: linear-gradient(135deg,{bg_color},{bg_color}aa);">
-            {option['name']}
+        <div style="
+            background: linear-gradient(135deg,{color},{color}aa);
+            padding:15px;
+            border-radius:12px;
+            text-align:center;
+            font-weight:600;
+            margin-bottom:8px;
+            color:white;
+        ">
+            {opt['name']}
         </div>
-        """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 # -------------------
-# PAGES
+# PAGE: CREATE CAPSULE
 # -------------------
-page = st.session_state.page
-
-# ---------- CREATE CAPSULE ----------
-if page == "Create Capsule":
-    st.markdown('<div class="section-header">📝 Create Capsule</div><div class="divider"></div>', unsafe_allow_html=True)
+if st.session_state.page == "Create Capsule":
+    st.subheader("📝 Create Capsule")
 
     try:
         users = supabase.table("users").select("*").execute().data
@@ -145,10 +152,11 @@ if page == "Create Capsule":
             except Exception as e:
                 st.error(f"Error: {e}")
 
-# ---------- VIEW CAPSULES ----------
-elif page == "View Capsules":
-    st.markdown('<div class="section-header">📦 View Capsules</div><div class="divider"></div>', unsafe_allow_html=True)
-
+# -------------------
+# PAGE: VIEW CAPSULES
+# -------------------
+elif st.session_state.page == "View Capsules":
+    st.subheader("📦 View Capsules")
     filter_status = st.radio("Filter By", ["All", "Pending", "Delivered"], horizontal=True)
 
     try:
@@ -162,12 +170,12 @@ elif page == "View Capsules":
         df["scheduled_ist"] = df["scheduled_time"].apply(lambda x: x + timedelta(hours=5, minutes=30) if pd.notnull(x) else None)
 
         if filter_status == "Pending":
-            df = df[df["is_delivered"] == False]
+            df = df[df["is_delivered"]==False]
         elif filter_status == "Delivered":
-            df = df[df["is_delivered"] == True]
+            df = df[df["is_delivered"]==True]
 
         if df.empty:
-            st.info("No capsules match filter.")
+            st.info("No capsules found.")
         else:
             colors = ["#f6d365","#fda085","#a1c4fd","#c2e9fb","#84fab0","#8fd3f4"]
             for i, (_, row) in enumerate(df.iterrows()):
@@ -187,10 +195,11 @@ elif page == "View Capsules":
     else:
         st.info("No capsules found.")
 
-# ---------- MANAGE USERS ----------
-elif page == "Manage Users":
-    st.markdown('<div class="section-header">👥 Manage Users</div><div class="divider"></div>', unsafe_allow_html=True)
-
+# -------------------
+# PAGE: MANAGE USERS
+# -------------------
+elif st.session_state.page == "Manage Users":
+    st.subheader("👥 Manage Users")
     name = st.text_input("Name")
     email = st.text_input("Email")
     if st.button("Add User ➕"):
